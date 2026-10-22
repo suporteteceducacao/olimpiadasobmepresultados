@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard OBMEP · Histórico 2005-2025</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet"/>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --primary:#1a5fb4; --primary-dark:#0d3d7d;
+  --green:#26a269; --gold:#ffc107; --silver:#adb5bd;
+  --bronze:#cd7f32; --purple:#6f42c1; --red:#dc3545;
+  --sidebar-w:280px; --base-font:16px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-size:var(--base-font);
+  background:#eef1f7;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#212529; transition:background .3s,color .3s;
+}
+body.high-contrast{background:#000;color:#fff;}
+body.high-contrast .card,
+body.high-contrast .topbar,
+body.high-contrast .footer,
+body.high-contrast .sidebar,
+body.high-contrast .chart-card{background:#101010 !important;color:#fff !important;border-color:#333 !important;}
+body.high-contrast .form-select,
+body.high-contrast .form-control{background:#1c1c1c;color:#fff;border-color:#444;}
+body.high-contrast .table{color:#fff;}
+body.high-contrast .table thead{background:#1c1c1c !important;color:#fff;}
+body.high-contrast .text-muted{color:#b0b0b0 !important;}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+  color:#fff; padding:1.25rem; overflow-y:auto; z-index:1050;
+  transition:transform .3s; box-shadow:4px 0 20px rgba(0,0,0,.15);
+}
+.sidebar.show{transform:translateX(0) !important;}
+.sidebar .nav-link{border-radius:8px; transition:background .2s;}
+.sidebar .nav-link:hover{background:rgba(255,255,255,.12);}
+.sidebar .nav-link.active{background:rgba(255,255,255,.22); font-weight:700;}
+.filter-label{font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.35rem; opacity:.9;}
+.backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1040; display:none;}
+.backdrop.show{display:block;}
+
+/* ---- Layout ---- */
+.main-content{margin-left:var(--sidebar-w); padding:1.5rem; transition:margin .3s;}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .main-content{margin-left:0;}
+}
+
+/* ---- Tabs (views) ---- */
+.tab-view{display:none;}
+.tab-view.active{display:block; animation:fadeIn .35s ease;}
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* ---- Topbar ---- */
+.topbar{
+  background:#fff; border-radius:16px; padding:.75rem 1rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.06); margin-bottom:1.5rem;
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+}
+
+/* ---- KPI ---- */
+.kpi-card{
+  border-radius:16px; border:none; padding:1.1rem 1.25rem; color:#fff;
+  position:relative; overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,.10); transition:transform .2s,box-shadow .2s;
+  height:100%;
+}
+.kpi-card:hover{transform:translateY(-4px); box-shadow:0 12px 24px rgba(0,0,0,.15);}
+.kpi-card .icon{position:absolute; right:12px; top:12px; font-size:2.4rem; opacity:.25;}
+.kpi-card .value{font-size:1.9rem; font-weight:800; line-height:1;}
+.kpi-card .label{font-size:.82rem; opacity:.95; margin-top:.35rem;}
+.bg-total{background:linear-gradient(135deg,#1a5fb4,#4a8ad4);}
+.bg-gold{background:linear-gradient(135deg,#ffb300,#ffd54f); color:#2c2c2c;}
+.bg-silver{background:linear-gradient(135deg,#6c757d,#b6bcc2);}
+.bg-bronze{background:linear-gradient(135deg,#8b4513,#cd7f32);}
+.bg-mencao{background:linear-gradient(135deg,#6f42c1,#a78bfa);}
+.bg-escola{background:linear-gradient(135deg,#26a269,#5cdb95);}
+.bg-muni{background:linear-gradient(135deg,#dc3545,#f08080);}
+.bg-edicao{background:linear-gradient(135deg,#0d3d7d,#1a5fb4);}
+
+/* ---- Chart cards ---- */
+.chart-card{
+  background:#fff; border-radius:16px; padding:1rem 1.15rem;
+  border:none; box-shadow:0 4px 20px rgba(0,0,0,.06); height:100%;
+}
+.chart-card h6{font-weight:700; color:#333;}
+.chart-wrap{position:relative; height:300px;}
+@media(max-width:768px){ .chart-wrap{height:260px;} }
+
+/* ---- Destaques ---- */
+.destaque-card .value{font-size:1.25rem; font-weight:800; color:var(--primary); line-height:1.25; word-break:break-word;}
+.destaque-card .qty{font-size:.85rem; color:#666;}
+
+/* ---- Tabela ---- */
+#dataTable{font-size:.85rem;}
+#dataTable thead.sticky-top{top:0; z-index:2;}
+
+/* ---- Footer ---- */
+.footer{
+  margin-top:2rem; padding:1.5rem; background:#fff; border-radius:16px;
+  text-align:center; color:#666; font-size:.9rem;
+}
+
+/* ---- Loading ---- */
+.loading-overlay{
+  position:fixed; inset:0; background:rgba(255,255,255,.92);
+  display:none; align-items:center; justify-content:center; flex-direction:column;
+  gap:1rem; z-index:2000; font-weight:600;
+}
+.loading-overlay.show{display:flex;}
+body.high-contrast .loading-overlay{background:rgba(0,0,0,.9); color:#fff;}
+
+.btn-icon{width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px;}
+[vw]{z-index:9999;}
+.scroll-top{position:fixed; bottom:88px; right:20px; z-index:900; width:46px; height:46px;}
+
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible{
+  outline:3px solid #ffc107 !important; outline-offset:2px;
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+  <div class="spinner-border text-primary" style="width:3rem; height:3rem;"></div>
+  <div id="loadingText">Carregando dados...</div>
+</div>
+
+<div class="backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar" aria-label="Menu lateral e filtros">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0"><i class="bi bi-trophy-fill me-2 text-warning"></i>OBMEP</h5>
+    <button class="btn btn-sm btn-light d-md-none" onclick="toggleSidebar()" aria-label="Fechar menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <nav class="mb-3" role="tablist" aria-label="Seções do dashboard">
+    <a href="#" class="nav-link text-white py-2 active" data-tab="painel" role="tab" aria-selected="true"
+       onclick="showTab('painel');return false;">
+      <i class="bi bi-speedometer2 me-2"></i>Painel
+    </a>
+    <a href="#" class="nav-link text-white py-2" data-tab="graficos" role="tab" aria-selected="false"
+       onclick="showTab('graficos');return false;">
+      <i class="bi bi-bar-chart-line me-2"></i>Gráficos
+    </a>
+    <a href="#" class="nav-link text-white py-2" data-tab="tabela" role="tab" aria-selected="false"
+       onclick="showTab('tabela');return false;">
+      <i class="bi bi-table me-2"></i>Tabela
+    </a>
+  </nav>
+
+  <hr class="border-light"/>
+  <p class="filter-label text-white mb-2"><i class="bi bi-funnel me-1"></i>Filtros</p>
+
+  <div class="mb-2">
+    <div class="filter-label text-white">Ano <small>(Ctrl p/ múltiplos)</small></div>
+    <select id="filterAno" class="form-select form-select-sm" multiple size="4"></select>
+  </div>
+  <div class="mb-2">
+    <div class="filter-label text-white">Nível</div>
+    <select id="filterNivel" class="form-select form-select-sm" multiple size="3"></select>
+  </div>
+  <div class="mb-2">
+    <div class="filter-label text-white">Município</div>
+    <select id="filterMunicipio" class="form-select form-select-sm" multiple size="4"></select>
+  </div>
+  <div class="mb-2">
+    <div class="filter-label text-white">CREDE</div>
+    <select id="filterCrede" class="form-select form-select-sm" multiple size="3"></select>
+  </div>
+  <div class="mb-2">
+    <div class="filter-label text-white">Tipo de Medalha</div>
+    <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="tipoOuro" checked><label class="form-check-label text-white" for="tipoOuro">Ouro</label></div>
+    <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="tipoPrata" checked><label class="form-check-label text-white" for="tipoPrata">Prata</label></div>
+    <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="tipoBronze" checked><label class="form-check-label text-white" for="tipoBronze">Bronze</label></div>
+    <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="tipoMencao" checked><label class="form-check-label text-white" for="tipoMencao">Menção</label></div>
+  </div>
+  <div class="mb-3">
+    <div class="filter-label text-white">RMF</div>
+    <select id="filterRMF" class="form-select form-select-sm">
+      <option value="">Todos</option>
+      <option value="1">Sim</option>
+      <option value="0">Não</option>
+    </select>
+  </div>
+
+  <button class="btn btn-light w-100" onclick="clearFilters()">
+    <i class="bi bi-eraser me-1"></i>Limpar Filtros
+  </button>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="main-content" id="mainContent">
+
+  <div class="topbar" role="banner">
+    <button class="btn btn-outline-primary btn-icon d-md-none" onclick="toggleSidebar()" aria-label="Abrir menu">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+    <h5 class="mb-0 me-auto">
+      <i class="bi bi-trophy text-warning me-1"></i>
+      Histórico OBMEP <small class="text-muted d-none d-sm-inline">2005-2025</small>
+    </h5>
+    <span class="badge bg-success" id="statusBadge"><i class="bi bi-cloud-check me-1"></i>Auto</span>
+
+    <div class="btn-group" role="group" aria-label="Acessibilidade">
+      <button class="btn btn-outline-secondary" onclick="changeFont(-1)" title="Diminuir fonte" aria-label="Diminuir fonte">A-</button>
+      <button class="btn btn-outline-secondary" onclick="resetFont()" title="Fonte normal" aria-label="Fonte normal">A</button>
+      <button class="btn btn-outline-secondary" onclick="changeFont(1)" title="Aumentar fonte" aria-label="Aumentar fonte">A+</button>
+      <button class="btn btn-outline-secondary" onclick="toggleContrast()" title="Alto contraste" aria-label="Alto contraste">
+        <i class="bi bi-circle-half"></i>
+      </button>
+      <button class="btn btn-outline-secondary" onclick="reloadData()" title="Recarregar dados" aria-label="Recarregar">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ VIEW: PAINEL ============ -->
+  <section id="view-painel" class="tab-view active" role="tabpanel" aria-labelledby="tab-painel">
+    <div class="row g-3 mb-4" id="kpis">
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-total"><i class="bi bi-trophy-fill icon"></i><div class="value" id="kpiTotal">0</div><div class="label">Total de Medalhas</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-gold"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiOuro">0</div><div class="label">Medalhas de Ouro</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-silver"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiPrata">0</div><div class="label">Medalhas de Prata</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-bronze"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiBronze">0</div><div class="label">Medalhas de Bronze</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-mencao"><i class="bi bi-star-fill icon"></i><div class="value" id="kpiMencao">0</div><div class="label">Menções Honrosas</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-escola"><i class="bi bi-building icon"></i><div class="value" id="kpiEscolas">0</div><div class="label">Escolas</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-muni"><i class="bi bi-geo-alt-fill icon"></i><div class="value" id="kpiMunicipios">0</div><div class="label">Municípios</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-edicao"><i class="bi bi-calendar-event icon"></i><div class="value" id="kpiAnos">0</div><div class="label">Edições</div></div></div>
+    </div>
+
+    <h6 class="text-muted mb-2"><i class="bi bi-stars me-1"></i>Destaques</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="chart-card destaque-card">
+          <h6 class="mb-2"><i class="bi bi-geo-alt-fill me-2 text-danger"></i>Município com mais medalhas</h6>
+          <div class="value" id="destaqueMuni">—</div>
+          <div class="qty" id="destaqueMuniQty">—</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="chart-card destaque-card">
+          <h6 class="mb-2"><i class="bi bi-building me-2 text-primary"></i>Escola com mais medalhas</h6>
+          <div class="value" id="destaqueEscola">—</div>
+          <div class="qty" id="destaqueEscolaQty">—</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="chart-card destaque-card">
+          <h6 class="mb-2"><i class="bi bi-calendar-event me-2 text-success"></i>Edição com mais medalhas</h6>
+          <div class="value" id="destaqueAno">—</div>
+          <div class="qty" id="destaqueAnoQty">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: GRÁFICOS ============ -->
+  <section id="view-graficos" class="tab-view" role="tabpanel" aria-labelledby="tab-graficos">
+    <div class="row g-3">
+      <div class="col-12 col-lg-8">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Medalhas por Ano</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartAno','medalhas_por_ano')" aria-label="Baixar gráfico"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartAno" role="img" aria-label="Gráfico de barras de medalhas por ano"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Distribuição por Tipo</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartTipo','distribuicao_tipo')" aria-label="Baixar gráfico"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartTipo" role="img" aria-label="Gráfico de pizza por tipo"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-geo me-2 text-primary"></i>Top 10 Municípios</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartMunicipio','top_municipios')"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartMunicipio" role="img" aria-label="Top 10 municípios"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-building me-2 text-primary"></i>Top 10 Escolas</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEscola','top_escolas')"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartEscola" role="img" aria-label="Top 10 escolas"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-layers me-2 text-primary"></i>Medalhas por Nível</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartNivel','medalhas_por_nivel')"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartNivel" role="img" aria-label="Medalhas por nível"></canvas></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>Evolução por Tipo</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEvolucao','evolucao_por_tipo')"><i class="bi bi-download"></i></button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartEvolucao" role="img" aria-label="Evolução por tipo"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: TABELA ============ -->
+  <section id="view-tabela" class="tab-view" role="tabpanel" aria-labelledby="tab-tabela">
+    <div class="card border-0 shadow-sm" style="border-radius:16px;">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="mb-0"><i class="bi bi-table me-2"></i>Detalhamento dos registros</h6>
+          <span class="text-muted small" id="tableInfo">0 registros</span>
+        </div>
+        <div class="table-responsive" style="max-height:640px; overflow-y:auto;">
+          <table class="table table-sm table-hover align-middle mb-0" id="dataTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th>Escola</th><th>Município</th><th>Nível</th><th>Ano</th>
+                <th>Ouro</th><th>Prata</th><th>Bronze</th><th>Menção</th>
+                <th>CREDE</th><th>RMF</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="mb-1"><strong>Dashboard OBMEP</strong> · Histórico 2005-2025</div>
+    <div class="small">Fonte: <em>Histórico_OBMEP_2005-2025_oficial</em> · CSV · TXT · XLSX · JSON</div>
+    <div class="small mt-1">Última atualização: <span id="lastUpdate">—</span></div>
+  </footer>
+</main>
+
+<button class="btn btn-primary rounded-circle scroll-top shadow" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">
+  <i class="bi bi-arrow-up"></i>
+</button>
+
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* =========================================================
+   CONFIG
+========================================================= */
+const DATA_BASE = 'Histórico_OBMEP_2005-2025_oficial';
+const DATA_CANDIDATES = [
+  DATA_BASE + '.csv',
+  DATA_BASE + '.txt',
+  DATA_BASE + '.xlsx',
+  DATA_BASE + '.xls',
+  DATA_BASE + '.json',
+  encodeURIComponent(DATA_BASE) + '.csv',
+  encodeURIComponent(DATA_BASE) + '.txt',
+  encodeURIComponent(DATA_BASE) + '.xlsx',
+  encodeURIComponent(DATA_BASE) + '.xls',
+  encodeURIComponent(DATA_BASE) + '.json',
+];
+const AUTO_REFRESH_MS = 5 * 60 * 1000;
+
+const COLORS = {
+  ouro:'#ffc107', prata:'#adb5bd', bronze:'#cd7f32', mencao:'#6f42c1',
+  primary:'#1a5fb4', green:'#26a269', red:'#dc3545'
+};
+
+if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
+
+let rawData = [];
+let filteredData = [];
+const charts = {};
+let currentTab = 'painel';
+
+/* =========================================================
+   UTIL
+========================================================= */
+function num(v){
+  if (v === null || v === undefined) return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).trim().toLowerCase();
+  if (!s) return 0;
+  if (['sim','s','yes','x','true','1'].includes(s)) return 1;
+  if (['não','nao','n','no','false','0'].includes(s)) return 0;
+  const n = parseFloat(s.replace(/\./g,'').replace(',','.'));
+  return isNaN(n) ? 0 : n;
+}
+const str = v => v == null ? '' : String(v).trim();
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtBR = n => Number(n).toLocaleString('pt-BR');
+
+/* =========================================================
+   NORMALIZAÇÃO
+========================================================= */
+function normalizeRow(row){
+  const map = {};
+  for (const key in row){
+    const k = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                 .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    map[k] = row[key];
+  }
+  const get = (...names) => {
+    for (const n of names) if (map[n] !== undefined) return map[n];
+    return '';
+  };
+  const out = {
+    escola:    str(get('escola')),
+    municipio: str(get('municipio')),
+    nivel:     str(get('nivel')),
+    ano:       str(get('ano')),
+    medalha:   str(get('medalha')),
+    mencao:    num(get('mencao','mencao_honrosa')),
+    ouro:      num(get('ouro')),
+    prata:     num(get('prata')),
+    bronze:    num(get('bronze')),
+    crede:     str(get('crede')),
+    rmf:       str(get('rmf'))
+  };
+  if (out.ouro===0 && out.prata===0 && out.bronze===0 && out.mencao===0 && out.medalha){
+    const m = out.medalha.toLowerCase();
+    if (m.includes('ouro')) out.ouro = 1;
+    else if (m.includes('prata')) out.prata = 1;
+    else if (m.includes('bronze')) out.bronze = 1;
+    else if (m.includes('men')) out.mencao = 1;
+  }
+  return out;
+}
+
+/* =========================================================
+   PARSE JSON
+========================================================= */
+function parseJSONData(text){
+  const parsed = JSON.parse(text);
+  if (Array.isArray(parsed)) return parsed;
+  const tryKeys = ['data','dados','registros','rows','items','records','historico','resultados','medalhas'];
+  for (const k of tryKeys){
+    if (Array.isArray(parsed[k])) return parsed[k];
+  }
+  // fallback: primeira propriedade que seja array
+  for (const k in parsed){
+    if (Array.isArray(parsed[k])) return parsed[k];
+  }
+  // último recurso: objeto com chaves numéricas → array
+  const vals = Object.values(parsed);
+  if (vals.length && typeof vals[0] === 'object') return vals;
+  throw new Error('JSON inválido: nenhum array de registros encontrado.');
+}
+
+/* =========================================================
+   LEITURA AUTOMÁTICA
+========================================================= */
+async function loadData(){
+  showLoading('Buscando arquivo de dados...');
+  for (const url of DATA_CANDIDATES){
+    try {
+      const resp = await fetch(url, { cache:'no-store' });
+      if (!resp.ok) continue;
+      const lower = url.toLowerCase();
+      let rows;
+
+      if (lower.endsWith('.xlsx') || lower.endsWith('.xls')){
+        const buf = await resp.arrayBuffer();
+        const wb = XLSX.read(buf, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      } else if (lower.endsWith('.json')){
+        const text = await resp.text();
+        rows = parseJSONData(text);
+      } else {
+        const text = await resp.text();
+        if (!text || text.length < 10) continue;
+        const parsed = Papa.parse(text, { header:true, skipEmptyLines:'greedy' });
+        rows = parsed.data;
+        if (rows.length && Object.keys(rows[0]).length === 1){
+          const alt = Papa.parse(text, { header:true, skipEmptyLines:'greedy', delimiter:';' });
+          if (Object.keys(alt.data[0]||{}).length > 1) rows = alt.data;
+        }
+      }
+      if (!rows || !rows.length) continue;
+
+      const norm = rows.map(normalizeRow).filter(r => r.escola || r.municipio || r.ano);
+      if (!norm.length) continue;
+
+      rawData = norm;
+      console.log(`✅ ${norm.length} registros carregados de: ${url}`);
+      buildFilterOptions();
+      applyFilters();
+      updateLastUpdate();
+      hideLoading();
+      return true;
+    } catch(e){ console.warn('Falha em', url, e); }
+  }
+
+  console.warn('⚠️ Nenhum arquivo encontrado. Gerando dados de exemplo...');
+  rawData = generateSampleData();
+  buildFilterOptions();
+  applyFilters();
+  updateLastUpdate();
+  hideLoading();
+  showAlert('Arquivo de dados não encontrado. Exibindo dados de exemplo. Certifique-se de que <strong>'+DATA_BASE+'.csv|txt|xlsx|json</strong> está na mesma pasta e sirva por HTTP.','warning');
+  return false;
+}
+
+function generateSampleData(){
+  const munis = ['Fortaleza','Sobral','Caucaia','Juazeiro do Norte','Crato','Maracanaú','Quixadá','Iguatu','Canindé','Crateús','Itapipoca','Russas'];
+  const escolas = ['EEEP Colégio Militar','Colégio Farias Brito','EEEP Ari de Sá','Colégio 7 de Setembro','EEFM Escola Estadual','Colégio Christus','EEEP Maria José'];
+  const niveis = ['1','2','3'];
+  const out = [];
+  for (let ano = 2005; ano <= 2025; ano++){
+    const q = 20 + Math.floor(Math.random()*70);
+    for (let i = 0; i < q; i++){
+      const r = Math.random();
+      const o = r < .12, p = !o && r < .32, b = !o && !p && r < .58, m = !o && !p && !b;
+      out.push({
+        escola: escolas[(Math.random()*escolas.length)|0],
+        municipio: munis[(Math.random()*munis.length)|0],
+        nivel: niveis[(Math.random()*niveis.length)|0],
+        ano: String(ano),
+        medalha: o?'Ouro':p?'Prata':b?'Bronze':'Menção',
+        mencao: m?1:0, ouro: o?1:0, prata: p?1:0, bronze: b?1:0,
+        crede: 'CREDE ' + (1 + ((Math.random()*20)|0)),
+        rmf: Math.random() < .45 ? '1' : '0'
+      });
+    }
+  }
+  return out;
+}
+
+/* =========================================================
+   FILTROS
+========================================================= */
+function uniqSort(arr){
+  return [...new Set(arr.filter(v => v !== ''))].sort((a,b) => {
+    const na = parseFloat(a), nb = parseFloat(b);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return a.localeCompare(b, 'pt-BR');
+  });
+}
+function fillSelect(id, values){
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    el.appendChild(o);
+  });
+  el.onchange = applyFilters;
+}
+function buildFilterOptions(){
+  fillSelect('filterAno',       uniqSort(rawData.map(r=>r.ano)));
+  fillSelect('filterNivel',     uniqSort(rawData.map(r=>r.nivel)));
+  fillSelect('filterMunicipio', uniqSort(rawData.map(r=>r.municipio)));
+  fillSelect('filterCrede',     uniqSort(rawData.map(r=>r.crede)));
+}
+function getSelected(id){
+  return Array.from(document.getElementById(id).selectedOptions).map(o => o.value);
+}
+
+function applyFilters(){
+  const anos   = getSelected('filterAno');
+  const niveis = getSelected('filterNivel');
+  const munis  = getSelected('filterMunicipio');
+  const credes = getSelected('filterCrede');
+  const rmf    = document.getElementById('filterRMF').value;
+  const tipos  = {
+    ouro:   document.getElementById('tipoOuro').checked,
+    prata:  document.getElementById('tipoPrata').checked,
+    bronze: document.getElementById('tipoBronze').checked,
+    mencao: document.getElementById('tipoMencao').checked
+  };
+
+  filteredData = rawData.filter(r => {
+    if (anos.length   && !anos.includes(r.ano)) return false;
+    if (niveis.length && !niveis.includes(r.nivel)) return false;
+    if (munis.length  && !munis.includes(r.municipio)) return false;
+    if (credes.length && !credes.includes(r.crede)) return false;
+    if (rmf === '1' && !/^(1|sim|s|true)$/i.test(r.rmf)) return false;
+    if (rmf === '0' && !/^(0|nao|não|n|false)$/i.test(r.rmf)) return false;
+    if (!tipos.ouro   && r.ouro   > 0) return false;
+    if (!tipos.prata  && r.prata  > 0) return false;
+    if (!tipos.bronze && r.bronze > 0) return false;
+    if (!tipos.mencao && r.mencao > 0) return false;
+    return true;
+  });
+
+  renderAll();
+}
+
+function clearFilters(){
+  ['filterAno','filterNivel','filterMunicipio','filterCrede'].forEach(id => {
+    const el = document.getElementById(id);
+    for (const o of el.options) o.selected = false;
+  });
+  document.getElementById('filterRMF').value = '';
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => document.getElementById(id).checked = true);
+  applyFilters();
+}
+
+/* =========================================================
+   TAB SWITCHING
+========================================================= */
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+  const view = document.getElementById('view-' + tab);
+  if (view) view.classList.add('active');
+
+  document.querySelectorAll('.sidebar .nav-link[data-tab]').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+    el.setAttribute('aria-selected', el.dataset.tab === tab);
+  });
+
+  // Renderiza conteúdo específico da aba
+  if (tab === 'graficos'){
+    // pequeno delay para garantir que o container tenha largura
+    setTimeout(() => renderAllCharts(), 60);
+  } else if (tab === 'tabela'){
+    renderTable();
+  }
+
+  // Fecha sidebar no mobile
+  if (window.innerWidth < 768){
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('backdrop').classList.remove('show');
+  }
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function setText(id, v){ const e = document.getElementById(id); if (e) e.textContent = v; }
+
+function groupSum(keyFn, valFn){
+  const m = {};
+  filteredData.forEach(r => {
+    const k = keyFn(r);
+    if (!k) return;
+    m[k] = (m[k]||0) + valFn(r);
+  });
+  return m;
+}
+function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+/* ---- KPIs + Destaques ---- */
+function renderKPIs(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  const anosS = new Set(), muniS = new Set(), escS = new Set();
+  filteredData.forEach(r => {
+    t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao;
+    if (r.ano) anosS.add(r.ano);
+    if (r.municipio) muniS.add(r.municipio);
+    if (r.escola) escS.add(r.escola);
+  });
+  const total = t.ouro + t.prata + t.bronze;
+
+  setText('kpiTotal',      fmtBR(total));
+  setText('kpiOuro',       fmtBR(t.ouro));
+  setText('kpiPrata',      fmtBR(t.prata));
+  setText('kpiBronze',     fmtBR(t.bronze));
+  setText('kpiMencao',     fmtBR(t.mencao));
+  setText('kpiEscolas',    fmtBR(escS.size));
+  setText('kpiMunicipios', fmtBR(muniS.size));
+  setText('kpiAnos',       fmtBR(anosS.size));
+
+  // Destaques
+  const muniM  = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze);
+  const escM   = groupSum(r=>r.escola,    r=>r.ouro+r.prata+r.bronze);
+  const anoM   = groupSum(r=>r.ano,       r=>r.ouro+r.prata+r.bronze);
+  const topMuni = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
+  const topEsc  = Object.entries(escM).sort((a,b)=>b[1]-a[1])[0];
+  const topAno  = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
+
+  setText('destaqueMuni',    topMuni ? topMuni[0] : '—');
+  setText('destaqueMuniQty', topMuni ? `${fmtBR(topMuni[1])} medalhas` : '—');
+  setText('destaqueEscola',    topEsc ? topEsc[0] : '—');
+  setText('destaqueEscolaQty', topEsc ? `${fmtBR(topEsc[1])} medalhas` : '—');
+  setText('destaqueAno',    topAno ? topAno[0] : '—');
+  setText('destaqueAnoQty', topAno ? `${fmtBR(topAno[1])} medalhas` : '—');
+}
+
+/* ---- Base options ---- */
+const baseOpts = (horizontal=false) => ({
+  responsive:true,
+  maintainAspectRatio:false,
+  indexAxis: horizontal ? 'y' : 'x',
+  plugins:{
+    legend:{ display:false },
+    datalabels:{
+      color:'#222', font:{ size:10, weight:'700' },
+      anchor:'end', align:'end', offset:2,
+      formatter:v => v > 0 ? v : ''
+    },
+    tooltip:{ backgroundColor:'rgba(0,0,0,.85)', padding:10, cornerRadius:8 }
+  },
+  scales:{
+    x:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{ size:11 } } },
+    y:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{ size:11 } }, beginAtZero:true }
+  }
+});
+
+function renderChartAno(){
+  const m = groupSum(r => r.ano, r => r.ouro + r.prata + r.bronze);
+  const labels = Object.keys(m).sort((a,b) => parseFloat(a) - parseFloat(b));
+  const data = labels.map(l => m[l]);
+  destroyChart('chartAno');
+  charts.chartAno = new Chart(document.getElementById('chartAno'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Medalhas', data, backgroundColor:COLORS.primary, borderRadius:6 }] },
+    options: baseOpts()
+  });
+}
+
+function renderChartTipo(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  filteredData.forEach(r => {
+    t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao;
+  });
+  destroyChart('chartTipo');
+  charts.chartTipo = new Chart(document.getElementById('chartTipo'), {
+    type:'doughnut',
+    data:{
+      labels:['Ouro','Prata','Bronze','Menção'],
+      datasets:[{
+        data:[t.ouro, t.prata, t.bronze, t.mencao],
+        backgroundColor:[COLORS.ouro, COLORS.prata, COLORS.bronze, COLORS.mencao],
+        borderWidth:2, borderColor:'#fff'
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:11 } } },
+        datalabels:{
+          color:'#fff', font:{ size:11, weight:'700' },
+          formatter:(v, ctx) => {
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            if (!total) return '';
+            const p = (v/total*100).toFixed(0);
+            return v > 0 ? v + '\n' + p + '%' : '';
+          }
+        },
+        tooltip:{ callbacks:{ label: ctx => {
+          const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+          const p = total ? (ctx.parsed/total*100).toFixed(1) : 0;
+          return `${ctx.label}: ${ctx.parsed} (${p}%)`;
+        }}}
+      }
+    }
+  });
+}
+
+function renderChartMunicipio(){
+  const m = groupSum(r => r.municipio, r => r.ouro + r.prata + r.bronze);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartMunicipio');
+  charts.chartMunicipio = new Chart(document.getElementById('chartMunicipio'), {
+    type:'bar',
+    data:{ labels: top.map(x=>x[0]), datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.green, borderRadius:6 }] },
+    options: baseOpts(true)
+  });
+}
+
+function renderChartEscola(){
+  const m = groupSum(r => r.escola, r => r.ouro + r.prata + r.bronze);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartEscola');
+  charts.chartEscola = new Chart(document.getElementById('chartEscola'), {
+    type:'bar',
+    data:{
+      labels: top.map(x => x[0].length > 28 ? x[0].slice(0,28)+'…' : x[0]),
+      datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.primary, borderRadius:6 }]
+    },
+    options: baseOpts(true)
+  });
+}
+
+function renderChartNivel(){
+  const o = groupSum(r=>r.nivel, r=>r.ouro);
+  const p = groupSum(r=>r.nivel, r=>r.prata);
+  const b = groupSum(r=>r.nivel, r=>r.bronze);
+  const niveis = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b)])].sort();
+  destroyChart('chartNivel');
+  charts.chartNivel = new Chart(document.getElementById('chartNivel'), {
+    type:'bar',
+    data:{
+      labels: niveis.map(n => 'Nível ' + n),
+      datasets:[
+        { label:'Ouro',  data: niveis.map(n=>o[n]||0), backgroundColor:COLORS.ouro,  borderRadius:4 },
+        { label:'Prata', data: niveis.map(n=>p[n]||0), backgroundColor:COLORS.prata, borderRadius:4 },
+        { label:'Bronze',data: niveis.map(n=>b[n]||0), backgroundColor:COLORS.bronze,borderRadius:4 }
+      ]
+    },
+    options:{
+      ...baseOpts(),
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:11 } } },
+        datalabels:{ color:'#222', font:{ size:9, weight:'700' }, formatter:v=>v>0?v:'' }
+      },
+      scales:{
+        x:{ stacked:true, grid:{ display:false } },
+        y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.05)' } }
+      }
+    }
+  });
+}
+
+function renderChartEvolucao(){
+  const o = groupSum(r=>r.ano, r=>r.ouro);
+  const p = groupSum(r=>r.ano, r=>r.prata);
+  const b = groupSum(r=>r.ano, r=>r.bronze);
+  const m = groupSum(r=>r.ano, r=>r.mencao);
+  const anos = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b),...Object.keys(m)])]
+    .sort((a,b)=>parseFloat(a)-parseFloat(b));
+  destroyChart('chartEvolucao');
+  charts.chartEvolucao = new Chart(document.getElementById('chartEvolucao'), {
+    type:'line',
+    data:{
+      labels: anos,
+      datasets:[
+        { label:'Ouro',  data: anos.map(a=>o[a]||0), borderColor:COLORS.ouro,  backgroundColor:'rgba(255,193,7,.15)', tension:.35, fill:true, pointRadius:2 },
+        { label:'Prata', data: anos.map(a=>p[a]||0), borderColor:COLORS.prata, backgroundColor:'rgba(173,181,189,.12)', tension:.35, pointRadius:2 },
+        { label:'Bronze',data: anos.map(a=>b[a]||0), borderColor:COLORS.bronze,backgroundColor:'rgba(205,127,50,.12)', tension:.35, pointRadius:2 },
+        { label:'Menção',data: anos.map(a=>m[a]||0), borderColor:COLORS.mencao,backgroundColor:'rgba(111,66,193,.12)', tension:.35, pointRadius:2 }
+      ]
+    },
+    options:{
+      ...baseOpts(),
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:11 } } },
+        datalabels:{ display:false }
+      }
+    }
+  });
+}
+
+function renderAllCharts(){
+  renderChartAno();
+  renderChartTipo();
+  renderChartMunicipio();
+  renderChartEscola();
+  renderChartNivel();
+  renderChartEvolucao();
+}
+
+/* ---- Tabela ---- */
+function renderTable(){
+  const tbody = document.querySelector('#dataTable tbody');
+  tbody.innerHTML = '';
+  const slice = filteredData.slice(0, 500);
+  const frag = document.createDocumentFragment();
+  slice.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(r.escola)}</td>
+      <td>${escapeHtml(r.municipio)}</td>
+      <td>${escapeHtml(r.nivel)}</td>
+      <td>${escapeHtml(r.ano)}</td>
+      <td>${r.ouro||''}</td>
+      <td>${r.prata||''}</td>
+      <td>${r.bronze||''}</td>
+      <td>${r.mencao||''}</td>
+      <td>${escapeHtml(r.crede)}</td>
+      <td>${escapeHtml(r.rmf)}</td>`;
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+  document.getElementById('tableInfo').textContent =
+    `${fmtBR(filteredData.length)} registros (exibindo ${Math.min(500, filteredData.length)})`;
+}
+
+/* ---- Render geral ---- */
+function renderAll(){
+  renderKPIs();
+  if (currentTab === 'graficos') renderAllCharts();
+  if (currentTab === 'tabela')   renderTable();
+}
+
+/* =========================================================
+   DOWNLOAD PNG
+========================================================= */
+function downloadChart(id, name){
+  const c = document.getElementById(id);
+  if (!c) return;
+  const a = document.createElement('a');
+  a.download = `${name || id}_${new Date().toISOString().slice(0,10)}.png`;
+  a.href = c.toDataURL('image/png', 1.0);
+  a.click();
+}
+
+/* =========================================================
+   ACESSIBILIDADE
+========================================================= */
+let fontSize = 16;
+function changeFont(d){
+  fontSize = Math.max(12, Math.min(22, fontSize + d));
+  document.documentElement.style.setProperty('--base-font', fontSize + 'px');
+  if (currentTab === 'graficos') setTimeout(renderAllCharts, 100);
+}
+function resetFont(){
+  fontSize = 16;
+  document.documentElement.style.setProperty('--base-font', fontSize + 'px');
+  if (currentTab === 'graficos') setTimeout(renderAllCharts, 100);
+}
+function toggleContrast(){ document.body.classList.toggle('high-contrast'); }
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('show');
+  document.getElementById('backdrop').classList.toggle('show');
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function showLoading(txt){
+  document.getElementById('loadingText').textContent = txt || 'Carregando...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
+function updateLastUpdate(){ document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR'); }
+function showAlert(msg, type='info'){
+  const div = document.createElement('div');
+  div.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow`;
+  div.style.cssText = 'top:80px; right:20px; z-index:2100; max-width:420px;';
+  div.innerHTML = `<i class="bi bi-info-circle me-2"></i>${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 9000);
+}
+
+/* =========================================================
+   AUTO-REFRESH
+========================================================= */
+async function reloadData(){
+  showLoading('Recarregando dados...');
+  const saved = {
+    anos:   getSelected('filterAno'),
+    niveis: getSelected('filterNivel'),
+    munis:  getSelected('filterMunicipio'),
+    credes: getSelected('filterCrede'),
+    rmf:    document.getElementById('filterRMF').value,
+    tipos:  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].map(id => document.getElementById(id).checked)
+  };
+  await loadData();
+  try{
+    ['filterAno','filterNivel','filterMunicipio','filterCrede'].forEach((id,i) => {
+      const key = ['anos','niveis','munis','credes'][i];
+      const el = document.getElementById(id);
+      for (const o of el.options) o.selected = saved[key].includes(o.value);
+    });
+    document.getElementById('filterRMF').value = saved.rmf;
+    ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach((id,i) => {
+      document.getElementById(id).checked = saved.tipos[i];
+    });
+  }catch(e){}
+  applyFilters();
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+document.addEventListener('DOMContentLoaded', async () => {
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao','filterRMF'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+
+  await loadData();
+  setInterval(reloadData, AUTO_REFRESH_MS);
+});
+</script>
+</body>
+</html>
