@@ -29,42 +29,37 @@ body{
   color:#1f2937; transition:background .3s,color .3s;
 }
 body.high-contrast{background:#000;color:#fff;}
-body.high-contrast .card,
-body.high-contrast .topbar,
-body.high-contrast .footer,
-body.high-contrast .sidebar,
-body.high-contrast .chart-card,
-body.high-contrast .empty-state-card{background:#101010 !important;color:#fff !important;border-color:#333 !important;}
-body.high-contrast .form-select,
-body.high-contrast .form-control{background:#1c1c1c;color:#fff;border-color:#444;}
+body.high-contrast .card, body.high-contrast .topbar, body.high-contrast .footer,
+body.high-contrast .sidebar, body.high-contrast .chart-card,
+body.high-contrast .empty-state-card, body.high-contrast .table-filter-bar{
+  background:#101010 !important;color:#fff !important;border-color:#333 !important;
+}
 body.high-contrast .table{color:#fff;}
 body.high-contrast .table thead{background:#1c1c1c !important;color:#fff;}
 body.high-contrast .text-muted{color:#b0b0b0 !important;}
-body.high-contrast .insights-list li{background:#1c1c1c;color:#eee;}
-body.high-contrast .destaque-item{background:#1c1c1c;}
+body.high-contrast .insights-list li, body.high-contrast .destaque-item{background:#1c1c1c;color:#eee;}
+body.high-contrast .table-filter-bar .filter-btn.light{background:#1c1c1c;color:#fff;border-color:#444;}
 
-/* ---------- Sidebar ---------- */
+/* Sidebar */
 .sidebar{
   position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   color:#fff; padding:1.15rem 1rem; overflow-y:auto; z-index:1050;
-  box-shadow:4px 0 20px rgba(0,0,0,.15);
-  transition:left .3s;
+  box-shadow:4px 0 20px rgba(0,0,0,.15); transition:left .3s;
 }
 .sidebar::-webkit-scrollbar{width:6px;}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25); border-radius:3px;}
 .sidebar .nav-link{border-radius:8px; transition:background .2s; color:#fff;}
-.sidebar .nav-link:hover{background:rgba(255,255,255,.12); color:#fff;}
+.sidebar .nav-link:hover{background:rgba(255,255,255,.12);}
 .sidebar .nav-link.active{background:rgba(255,255,255,.22); font-weight:700;}
 .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1040; display:none;}
 .backdrop.show{display:block;}
-
 @media(max-width:768px){
   .sidebar{left:-280px;}
   .sidebar.show{left:0;}
 }
 
-/* ---------- Filter blocks ---------- */
+/* Header filtros */
 .sidebar-filters-header{
   display:flex; align-items:center; gap:.5rem;
   padding:.5rem 0; margin-bottom:.75rem;
@@ -80,7 +75,7 @@ body.high-contrast .destaque-item{background:#1c1c1c;}
 .filter-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:.35rem;}
 .filter-label{font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:rgba(255,255,255,.92);}
 
-/* ---------- Filter button (dropdown trigger) ---------- */
+/* Botão de filtro (trigger) */
 .filter-btn{
   width:100%;
   background:rgba(255,255,255,.08);
@@ -89,17 +84,12 @@ body.high-contrast .destaque-item{background:#1c1c1c;}
   padding:.5rem .65rem;
   border-radius:8px;
   display:flex; align-items:center; gap:.5rem;
-  text-align:left; cursor:pointer;
-  transition:all .15s;
-  font-family:inherit;
+  text-align:left; cursor:pointer; transition:all .15s; font-family:inherit;
 }
 .filter-btn:hover{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.3);}
 .filter-btn:focus-visible{outline:3px solid #f59e0b; outline-offset:2px;}
-.filter-btn.show,
-.filter-btn[aria-expanded="true"]{
-  background:rgba(255,255,255,.18);
-  border-color:#f59e0b;
-  box-shadow:0 0 0 2px rgba(245,158,11,.35);
+.filter-btn.show, .filter-btn[aria-expanded="true"]{
+  background:rgba(255,255,255,.18); border-color:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,.35);
 }
 .filter-btn.has-selection{border-color:#f59e0b;}
 .filter-btn-icon{font-size:1rem; opacity:.85; flex-shrink:0;}
@@ -110,147 +100,105 @@ body.high-contrast .destaque-item{background:#1c1c1c;}
 .filter-btn-arrow{font-size:.72rem; opacity:.7; transition:transform .2s; flex-shrink:0;}
 .filter-btn[aria-expanded="true"] .filter-btn-arrow{transform:rotate(180deg);}
 
-/* ---------- Dropdown panel ---------- */
+/* Variante clara (para aba Tabela) */
+.filter-btn.light{
+  background:#f8fafc; border-color:#cbd5e1; color:#0f172a;
+}
+.filter-btn.light:hover{background:#f1f5f9; border-color:#94a3b8;}
+.filter-btn.light .filter-btn-label{color:#64748b; opacity:1;}
+.filter-btn.light .filter-btn-value{color:#0f172a;}
+.filter-btn.light.has-selection{border-color:#f59e0b; background:#fffbeb;}
+.filter-btn.light.has-selection .filter-btn-value{color:#b45309;}
+.filter-btn.light.show, .filter-btn.light[aria-expanded="true"]{
+  background:#fffbeb; border-color:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,.25);
+}
+
+/* Dropdown panel */
 .dropdown-menu.filter-dropdown{
-  padding:0; min-width:260px;
-  max-width:min(340px, calc(100vw - 2rem));
-  border:1px solid #e2e8f0;
-  border-radius:10px;
-  box-shadow:0 12px 32px rgba(0,0,0,.18);
-  overflow:hidden;
+  padding:0; min-width:260px; max-width:min(340px, calc(100vw - 2rem));
+  border:1px solid #e2e8f0; border-radius:10px;
+  box-shadow:0 12px 32px rgba(0,0,0,.18); overflow:hidden;
 }
 .filter-search{
-  position:relative;
-  padding:.5rem;
-  border-bottom:1px solid #e2e8f0;
-  background:#f8fafc;
+  position:relative; padding:.5rem;
+  border-bottom:1px solid #e2e8f0; background:#f8fafc;
 }
 .filter-search i{
   position:absolute; left:1rem; top:50%; transform:translateY(-50%);
   color:#94a3b8; font-size:.85rem; pointer-events:none;
 }
 .filter-search input{
-  width:100%;
-  padding:.4rem .5rem .4rem 2rem;
-  border:1px solid #cbd5e1;
-  border-radius:6px;
-  font-size:.85rem;
-  background:#fff;
-  color:#0f172a;
-  font-family:inherit;
+  width:100%; padding:.4rem .5rem .4rem 2rem;
+  border:1px solid #cbd5e1; border-radius:6px;
+  font-size:.85rem; background:#fff; color:#0f172a; font-family:inherit;
 }
 .filter-search input:focus{
-  outline:none; border-color:#2563eb;
-  box-shadow:0 0 0 3px rgba(37,99,235,.18);
+  outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.18);
 }
 .filter-actions{
   display:flex; align-items:center; gap:.35rem;
-  padding:.4rem .6rem;
-  border-bottom:1px solid #e2e8f0;
-  background:#fff;
+  padding:.4rem .6rem; border-bottom:1px solid #e2e8f0; background:#fff;
 }
 .filter-actions button{
-  font-size:.74rem; padding:.15rem .4rem;
-  border:none; background:transparent; color:#2563eb;
-  font-weight:700; cursor:pointer; border-radius:4px;
-  font-family:inherit;
+  font-size:.74rem; padding:.15rem .4rem; border:none; background:transparent;
+  color:#2563eb; font-weight:700; cursor:pointer; border-radius:4px; font-family:inherit;
 }
 .filter-actions button:hover{background:#eff6ff;}
-.filter-selected-count{
-  font-size:.7rem; color:#64748b; font-weight:600;
-  margin-left:auto;
-}
-.filter-options{
-  max-height:260px; overflow-y:auto;
-  padding:.3rem;
-  background:#fff;
-}
+.filter-selected-count{font-size:.7rem; color:#64748b; font-weight:600; margin-left:auto;}
+.filter-options{max-height:260px; overflow-y:auto; padding:.3rem; background:#fff;}
 .filter-options::-webkit-scrollbar{width:6px;}
 .filter-options::-webkit-scrollbar-thumb{background:#cbd5e1; border-radius:3px;}
 .filter-option{
   display:flex; align-items:center; gap:.5rem;
-  padding:.35rem .5rem; border-radius:5px;
-  cursor:pointer; font-size:.85rem;
-  color:#1e293b;
-  transition:background .1s;
+  padding:.35rem .5rem; border-radius:5px; cursor:pointer;
+  font-size:.85rem; color:#1e293b; transition:background .1s;
 }
 .filter-option:hover{background:#f1f5f9;}
-.filter-option input[type="checkbox"]{
-  margin:0; cursor:pointer; accent-color:#2563eb;
-  flex-shrink:0;
-}
-.filter-option input[type="checkbox"]:checked ~ span{
-  font-weight:700; color:#1a5fb4;
-}
+.filter-option input[type="checkbox"]{margin:0; cursor:pointer; accent-color:#2563eb; flex-shrink:0;}
+.filter-option input[type="checkbox"]:checked ~ span{font-weight:700; color:#1a5fb4;}
 .filter-option.hidden{display:none;}
-.filter-option.empty{
-  display:block; text-align:center; color:#94a3b8;
-  font-style:italic; cursor:default; padding:.75rem;
-}
+.filter-option.empty{display:block; text-align:center; color:#94a3b8; font-style:italic; cursor:default; padding:.75rem;}
+.filter-option.invalid{background:#fef2f2;}
+.filter-option.invalid span{color:#b91c1c;}
+.filter-option.invalid small{color:#b91c1c; font-style:italic; font-size:.7rem;}
 
-/* ---------- RMF select (styled) ---------- */
+/* Single select RMF */
 .single-select{
-  width:100%;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.18);
-  color:#fff;
-  padding:.5rem .65rem;
-  border-radius:8px;
-  font-size:.85rem;
-  cursor:pointer;
+  width:100%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+  color:#fff; padding:.5rem .65rem; border-radius:8px; font-size:.85rem; cursor:pointer;
   appearance:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='%23ffffff'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right .65rem center;
-  padding-right:1.75rem;
+  background-repeat:no-repeat; background-position:right .65rem center; padding-right:1.75rem;
   font-family:inherit;
 }
 .single-select option{background:#1a5fb4; color:#fff;}
 .single-select:focus{outline:none; border-color:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,.35);}
 
-/* ---------- Checkboxes de tipo ---------- */
+/* Checkboxes de tipo */
 .filter-checkboxes{display:grid; grid-template-columns:1fr 1fr; gap:.35rem;}
 .filter-checkbox{
   display:flex; align-items:center; gap:.4rem;
-  font-size:.8rem; cursor:pointer;
-  color:rgba(255,255,255,.92);
-  padding:.2rem .25rem; border-radius:5px;
-  transition:background .15s;
+  font-size:.8rem; cursor:pointer; color:rgba(255,255,255,.92);
+  padding:.2rem .25rem; border-radius:5px; transition:background .15s;
 }
 .filter-checkbox:hover{background:rgba(255,255,255,.08);}
 .filter-checkbox input{margin:0;}
 
-/* ---------- High contrast ---------- */
-body.high-contrast .dropdown-menu.filter-dropdown{background:#1c1c1c; border-color:#333;}
-body.high-contrast .filter-search{background:#252525; border-color:#333;}
-body.high-contrast .filter-search input{background:#1c1c1c; color:#fff; border-color:#444;}
-body.high-contrast .filter-actions{background:#252525; border-color:#333;}
-body.high-contrast .filter-actions button{color:#60a5fa;}
-body.high-contrast .filter-actions button:hover{background:#333;}
-body.high-contrast .filter-options{background:#1c1c1c;}
-body.high-contrast .filter-option{color:#eee;}
-body.high-contrast .filter-option:hover{background:#333;}
-body.high-contrast .filter-option input:checked ~ span{color:#60a5fa;}
-body.high-contrast .filter-selected-count{color:#aaa;}
-
-/* ---------- Layout ---------- */
+/* Layout */
 .main-content{margin-left:var(--sidebar-w); padding:1.25rem 1.5rem 1rem; transition:margin .3s;}
-@media(max-width:768px){
-  .main-content{margin-left:0; padding:1rem;}
-}
+@media(max-width:768px){ .main-content{margin-left:0; padding:1rem;} }
 
-/* ---------- Tabs ---------- */
+/* Tabs */
 .tab-view{display:none;}
 .tab-view.active{display:block; animation:fadeIn .35s ease;}
 @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
 
-/* ---------- Empty state ---------- */
+/* Empty state */
 .empty-state{display:none; min-height:calc(100vh - 180px); align-items:center; justify-content:center; padding:2rem 1rem;}
 .is-empty .empty-state{display:flex;}
 .is-empty .tab-view{display:none !important;}
 .is-empty .sidebar-filters{display:none;}
 .is-empty .sidebar-nav{opacity:.45; pointer-events:none;}
-.is-empty #topbarReload{display:inline-flex;}
 .empty-state-card{
   background:#fff; border-radius:20px; padding:2.5rem 2.75rem; text-align:center;
   max-width:640px; border:2px dashed #cbd5e1; box-shadow:0 12px 40px rgba(0,0,0,.06);
@@ -260,13 +208,12 @@ body.high-contrast .filter-selected-count{color:#aaa;}
 .empty-state-card p{color:#475569; margin-bottom:.75rem;}
 .empty-state-card ul{list-style:none; padding:0; text-align:left; margin:1rem auto; max-width:420px;}
 .empty-state-card ul li{
-  padding:.4rem .75rem; margin-bottom:.35rem;
-  background:#f1f5f9; border-radius:8px;
-  font-family:ui-monospace,Menlo,monospace; font-size:.85rem; color:#0f172a;
+  padding:.4rem .75rem; margin-bottom:.35rem; background:#f1f5f9;
+  border-radius:8px; font-family:ui-monospace,Menlo,monospace; font-size:.85rem; color:#0f172a;
 }
 .empty-state-card code{background:#e2e8f0; padding:2px 6px; border-radius:4px; color:#0f172a;}
 
-/* ---------- Topbar ---------- */
+/* Topbar */
 .topbar{
   background:#fff; border-radius:16px; padding:.7rem 1rem;
   box-shadow:0 4px 20px rgba(0,0,0,.06); margin-bottom:1.25rem;
@@ -274,12 +221,11 @@ body.high-contrast .filter-selected-count{color:#aaa;}
 }
 .topbar h5{font-weight:800; color:#0f172a;}
 
-/* ---------- KPI ---------- */
+/* KPI */
 .kpi-card{
   border-radius:16px; border:none; padding:1.1rem 1.25rem; color:#fff;
   position:relative; overflow:hidden; height:100%;
-  box-shadow:0 6px 20px rgba(0,0,0,.10);
-  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 6px 20px rgba(0,0,0,.10); transition:transform .2s,box-shadow .2s;
 }
 .kpi-card:hover{transform:translateY(-4px); box-shadow:0 14px 28px rgba(0,0,0,.14);}
 .kpi-card .icon{position:absolute; right:14px; top:14px; font-size:2.5rem; opacity:.22;}
@@ -294,15 +240,12 @@ body.high-contrast .filter-selected-count{color:#aaa;}
 .bg-muni{background:linear-gradient(135deg,#dc3545,#f08080);}
 .bg-edicao{background:linear-gradient(135deg,#0d3d7d,#1a5fb4);}
 
-/* ---------- Chart cards ---------- */
+/* Chart cards */
 .chart-card{
   background:#fff; border-radius:16px; padding:1.1rem 1.25rem; border:none;
   box-shadow:0 4px 20px rgba(0,0,0,.06); height:100%;
 }
-.chart-card h6{
-  font-weight:700; color:#0f172a; display:flex; align-items:center; gap:.4rem;
-  margin-bottom:.25rem;
-}
+.chart-card h6{font-weight:700; color:#0f172a; display:flex; align-items:center; gap:.4rem; margin-bottom:.25rem;}
 .chart-subtitle{font-size:.78rem; color:#64748b; margin-bottom:.75rem;}
 .chart-wrap{position:relative; height:340px;}
 .chart-wrap.tall{height:380px;}
@@ -314,7 +257,7 @@ body.high-contrast .filter-selected-count{color:#aaa;}
 }
 .chart-empty-overlay i{font-size:2rem; opacity:.4;}
 
-/* ---------- Insights / Destaques ---------- */
+/* Insights / Destaques */
 .insights-list{list-style:none; padding:0; margin:0;}
 .insights-list li{
   padding:.7rem .85rem; margin-bottom:.55rem; border-radius:8px;
@@ -336,20 +279,43 @@ body.high-contrast .filter-selected-count{color:#aaa;}
 .destaque-name{font-size:.95rem; font-weight:800; color:#0f172a; line-height:1.3; word-break:break-word;}
 .destaque-qty{font-size:.78rem; color:#64748b;}
 
-/* ---------- Tabela ---------- */
+/* Table filter bar */
+.table-filter-bar{
+  background:#fff; border-radius:14px; padding:1rem 1.15rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.06); margin-bottom:1rem;
+}
+.table-filter-title{
+  display:flex; align-items:center; gap:.4rem;
+  font-size:.88rem; font-weight:700; color:#334155; margin-bottom:.75rem;
+  flex-wrap:wrap;
+}
+.table-filter-title .btn-clear-filters-table{
+  margin-left:auto; background:none; border:1px solid #e2e8f0;
+  padding:.15rem .55rem; border-radius:6px; color:#64748b;
+  font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit;
+  display:inline-flex; align-items:center; gap:.25rem;
+}
+.table-filter-title .btn-clear-filters-table:hover{background:#f8fafc; color:#dc3545; border-color:#fecaca;}
+.table-filter-items{
+  display:flex; flex-wrap:wrap; gap:.6rem; align-items:center;
+}
+.table-filter-items > .dropdown{
+  flex:1 1 200px; min-width:180px; max-width:260px;
+}
+
+/* Table */
 #dataTable{font-size:.85rem;}
 #dataTable thead.sticky-top{top:0; z-index:2;}
 .medal-badge{
   display:inline-flex; align-items:center; justify-content:center;
-  min-width:26px; padding:2px 8px; border-radius:12px;
-  font-weight:700; font-size:.75rem;
+  min-width:26px; padding:2px 8px; border-radius:12px; font-weight:700; font-size:.75rem;
 }
 .medal-badge.ouro{background:#fef3c7; color:#92400e;}
 .medal-badge.prata{background:#e5e7eb; color:#374151;}
 .medal-badge.bronze{background:#ffedd5; color:#9a3412;}
 .medal-badge.mencao{background:#ede9fe; color:#5b21b6;}
 
-/* ---------- Misc ---------- */
+/* Misc */
 .footer{
   margin-top:1.5rem; padding:1.25rem; background:#fff; border-radius:16px;
   text-align:center; color:#64748b; font-size:.88rem;
@@ -360,11 +326,9 @@ body.high-contrast .filter-selected-count{color:#aaa;}
   gap:1rem; z-index:2000; font-weight:600; color:#334155;
 }
 .loading-overlay.show{display:flex;}
-body.high-contrast .loading-overlay{background:rgba(0,0,0,.92); color:#fff;}
 .btn-icon{width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px;}
 [vw]{z-index:9999;}
 .scroll-top{position:fixed; bottom:88px; right:20px; z-index:900; width:46px; height:46px;}
-
 button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible{
   outline:3px solid #f59e0b !important; outline-offset:2px;
 }
@@ -401,7 +365,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
     <div class="sidebar-filters-header">
       <i class="bi bi-funnel-fill"></i>
       <span>Filtros</span>
-      <button class="btn-clear-filters" onclick="clearFilters()" title="Limpar todos os filtros" aria-label="Limpar filtros">
+      <button class="btn-clear-filters" onclick="clearFilters()" title="Limpar todos os filtros">
         <i class="bi bi-x-circle-fill"></i>
       </button>
     </div>
@@ -418,10 +382,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
           <i class="bi bi-chevron-down filter-btn-arrow"></i>
         </button>
         <div class="dropdown-menu filter-dropdown">
-          <div class="filter-search">
-            <i class="bi bi-search"></i>
-            <input type="search" class="filter-search-input" placeholder="Buscar ano..." aria-label="Buscar ano">
-          </div>
+          <div class="filter-search"><i class="bi bi-search"></i>
+            <input type="search" class="filter-search-input" placeholder="Buscar ano..."></div>
           <div class="filter-actions">
             <button type="button" data-action="all">Marcar todos</button>
             <button type="button" data-action="none">Limpar</button>
@@ -444,6 +406,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
           <i class="bi bi-chevron-down filter-btn-arrow"></i>
         </button>
         <div class="dropdown-menu filter-dropdown">
+          <div class="filter-search"><i class="bi bi-search"></i>
+            <input type="search" class="filter-search-input" placeholder="Buscar nível..."></div>
           <div class="filter-actions">
             <button type="button" data-action="all">Marcar todos</button>
             <button type="button" data-action="none">Limpar</button>
@@ -466,10 +430,32 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
           <i class="bi bi-chevron-down filter-btn-arrow"></i>
         </button>
         <div class="dropdown-menu filter-dropdown">
-          <div class="filter-search">
-            <i class="bi bi-search"></i>
-            <input type="search" class="filter-search-input" placeholder="Buscar município..." aria-label="Buscar município">
+          <div class="filter-search"><i class="bi bi-search"></i>
+            <input type="search" class="filter-search-input" placeholder="Buscar município..."></div>
+          <div class="filter-actions">
+            <button type="button" data-action="all">Marcar todos</button>
+            <button type="button" data-action="none">Limpar</button>
+            <span class="filter-selected-count">0 de 0</span>
           </div>
+          <div class="filter-options"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Escola (NOVO) -->
+    <div class="filter-group">
+      <div class="dropdown" data-filter-key="escola">
+        <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-haspopup="true" aria-expanded="false">
+          <i class="bi bi-mortarboard filter-btn-icon"></i>
+          <span class="filter-btn-text">
+            <span class="filter-btn-label">Escola</span>
+            <span class="filter-btn-value">Carregando…</span>
+          </span>
+          <i class="bi bi-chevron-down filter-btn-arrow"></i>
+        </button>
+        <div class="dropdown-menu filter-dropdown">
+          <div class="filter-search"><i class="bi bi-search"></i>
+            <input type="search" class="filter-search-input" placeholder="Buscar escola..."></div>
           <div class="filter-actions">
             <button type="button" data-action="all">Marcar todos</button>
             <button type="button" data-action="none">Limpar</button>
@@ -492,10 +478,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
           <i class="bi bi-chevron-down filter-btn-arrow"></i>
         </button>
         <div class="dropdown-menu filter-dropdown">
-          <div class="filter-search">
-            <i class="bi bi-search"></i>
-            <input type="search" class="filter-search-input" placeholder="Buscar CREDE..." aria-label="Buscar CREDE">
-          </div>
+          <div class="filter-search"><i class="bi bi-search"></i>
+            <input type="search" class="filter-search-input" placeholder="Buscar CREDE..."></div>
           <div class="filter-actions">
             <button type="button" data-action="all">Marcar todos</button>
             <button type="button" data-action="none">Limpar</button>
@@ -520,7 +504,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
     <!-- RMF -->
     <div class="filter-group">
       <div class="filter-header"><span class="filter-label">RMF</span></div>
-      <select id="filterRMF" class="single-select" aria-label="Filtrar por RMF">
+      <select id="filterRMF" class="single-select">
         <option value="">Todos</option>
         <option value="1">Sim</option>
         <option value="0">Não</option>
@@ -530,7 +514,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 </aside>
 
 <!-- ============ MAIN ============ -->
-<main class="main-content" id="mainContent">
+<main class="main-content">
   <div class="topbar" role="banner">
     <button class="btn btn-outline-primary btn-icon d-md-none" onclick="toggleSidebar()" aria-label="Abrir menu">
       <i class="bi bi-list fs-4"></i>
@@ -545,11 +529,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <button class="btn btn-outline-secondary" onclick="resetFont()" title="Fonte normal">A</button>
       <button class="btn btn-outline-secondary" onclick="changeFont(1)" title="Aumentar fonte">A+</button>
       <button class="btn btn-outline-secondary" onclick="toggleContrast()" title="Alto contraste"><i class="bi bi-circle-half"></i></button>
-      <button class="btn btn-outline-secondary" id="topbarReload" onclick="reloadData()" title="Recarregar dados"><i class="bi bi-arrow-clockwise"></i></button>
+      <button class="btn btn-outline-secondary" onclick="reloadData()" title="Recarregar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
-  <!-- EMPTY STATE -->
   <section class="empty-state" id="emptyState" aria-live="polite">
     <div class="empty-state-card">
       <div class="empty-icon"><i class="bi bi-file-earmark-x-fill"></i></div>
@@ -563,10 +546,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       </ul>
       <p class="small mt-3 mb-3">
         <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
-        Servido por <strong>HTTP</strong> (ex.: <code>python -m http.server</code>). Não abra via <code>file://</code>.
+        Sirva por <strong>HTTP</strong> (ex.: <code>python -m http.server</code>). Não abra via <code>file://</code>.
       </p>
       <button class="btn btn-primary" onclick="reloadData()"><i class="bi bi-arrow-clockwise me-1"></i>Tentar novamente</button>
-      <div class="small mt-3 text-muted"><i class="bi bi-clock me-1"></i>Verificando a cada <strong>30 segundos</strong>…</div>
+      <div class="small mt-3 text-muted"><i class="bi bi-clock me-1"></i>Verificando a cada 30s…</div>
     </div>
   </section>
 
@@ -574,9 +557,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
   <section id="view-painel" class="tab-view active" role="tabpanel">
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-total"><i class="bi bi-trophy-fill icon"></i><div class="value" id="kpiTotal">0</div><div class="label">Total de Medalhas</div></div></div>
-      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-gold"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiOuro">0</div><div class="label">Medalhas de Ouro</div></div></div>
-      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-silver"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiPrata">0</div><div class="label">Medalhas de Prata</div></div></div>
-      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-bronze"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiBronze">0</div><div class="label">Medalhas de Bronze</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-gold"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiOuro">0</div><div class="label">Ouro</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-silver"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiPrata">0</div><div class="label">Prata</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-bronze"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiBronze">0</div><div class="label">Bronze</div></div></div>
       <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-mencao"><i class="bi bi-star-fill icon"></i><div class="value" id="kpiMencao">0</div><div class="label">Menções Honrosas</div></div></div>
       <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-escola"><i class="bi bi-building icon"></i><div class="value" id="kpiEscolas">0</div><div class="label">Escolas</div></div></div>
       <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-muni"><i class="bi bi-geo-alt-fill icon"></i><div class="value" id="kpiMunicipios">0</div><div class="label">Municípios</div></div></div>
@@ -587,7 +570,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-lg-7">
         <div class="chart-card h-100">
           <h6><i class="bi bi-lightbulb-fill text-warning"></i> Análises Rápidas</h6>
-          <p class="chart-subtitle">Insights gerados com base nos filtros aplicados</p>
+          <p class="chart-subtitle">Insights com base nos filtros aplicados</p>
           <ul class="insights-list" id="insightsList">
             <li class="text-muted"><i class="bi bi-hourglass"></i><span>Carregando análise…</span></li>
           </ul>
@@ -632,10 +615,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-8">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-bar-chart-fill text-primary"></i> Medalhas por Ano</h6>
-              <p class="chart-subtitle">Distribuição total de medalhas (ouro/prata/bronze) em cada edição</p>
-            </div>
+            <div><h6><i class="bi bi-bar-chart-fill text-primary"></i> Medalhas por Ano</h6>
+              <p class="chart-subtitle">Distribuição total (ouro+prata+bronze) por edição</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartAno','medalhas_por_ano')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap tall"><canvas id="chartAno"></canvas></div>
@@ -644,10 +625,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-4">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-pie-chart-fill text-primary"></i> Distribuição por Tipo</h6>
-              <p class="chart-subtitle">Proporção entre categorias</p>
-            </div>
+            <div><h6><i class="bi bi-pie-chart-fill text-primary"></i> Distribuição por Tipo</h6>
+              <p class="chart-subtitle">Proporção entre categorias</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartTipo','distribuicao_tipo')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap tall"><canvas id="chartTipo"></canvas></div>
@@ -656,10 +635,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-6">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-geo text-primary"></i> Top 10 Municípios</h6>
-              <p class="chart-subtitle">Ranking por total de medalhas</p>
-            </div>
+            <div><h6><i class="bi bi-geo text-primary"></i> Top 10 Municípios</h6>
+              <p class="chart-subtitle">Ranking por total de medalhas</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartMunicipio','top_municipios')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap"><canvas id="chartMunicipio"></canvas></div>
@@ -668,10 +645,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-6">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-building text-primary"></i> Top 10 Escolas</h6>
-              <p class="chart-subtitle">Ranking por total de medalhas</p>
-            </div>
+            <div><h6><i class="bi bi-building text-primary"></i> Top 10 Escolas</h6>
+              <p class="chart-subtitle">Ranking por total de medalhas</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEscola','top_escolas')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap"><canvas id="chartEscola"></canvas></div>
@@ -680,10 +655,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-6">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-layers text-primary"></i> Medalhas por Nível</h6>
-              <p class="chart-subtitle">Composição de ouro, prata e bronze em cada nível</p>
-            </div>
+            <div><h6><i class="bi bi-layers text-primary"></i> Medalhas por Nível</h6>
+              <p class="chart-subtitle">Composição em cada nível</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartNivel','medalhas_por_nivel')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap"><canvas id="chartNivel"></canvas></div>
@@ -692,10 +665,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
       <div class="col-12 col-lg-6">
         <div class="chart-card">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h6><i class="bi bi-graph-up text-primary"></i> Evolução por Tipo</h6>
-              <p class="chart-subtitle">Tendência anual de cada categoria</p>
-            </div>
+            <div><h6><i class="bi bi-graph-up text-primary"></i> Evolução por Tipo</h6>
+              <p class="chart-subtitle">Tendência anual</p></div>
             <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEvolucao','evolucao_por_tipo')"><i class="bi bi-download"></i></button>
           </div>
           <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
@@ -706,6 +677,106 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 
   <!-- TABELA -->
   <section id="view-tabela" class="tab-view" role="tabpanel">
+
+    <div class="table-filter-bar">
+      <div class="table-filter-title">
+        <i class="bi bi-funnel-fill text-primary"></i>
+        <span>Filtros da tabela</span>
+        <button class="btn-clear-filters-table" onclick="clearFilters()" title="Limpar todos os filtros">
+          <i class="bi bi-x-circle"></i> Limpar todos
+        </button>
+      </div>
+      <div class="table-filter-items">
+
+        <!-- Edição -->
+        <div class="dropdown" data-filter-key="ano">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-calendar-event filter-btn-icon"></i>
+            <span class="filter-btn-text">
+              <span class="filter-btn-label">Edição</span>
+              <span class="filter-btn-value">Carregando…</span>
+            </span>
+            <i class="bi bi-chevron-down filter-btn-arrow"></i>
+          </button>
+          <div class="dropdown-menu filter-dropdown">
+            <div class="filter-search"><i class="bi bi-search"></i>
+              <input type="search" class="filter-search-input" placeholder="Buscar edição..."></div>
+            <div class="filter-actions">
+              <button type="button" data-action="all">Marcar todos</button>
+              <button type="button" data-action="none">Limpar</button>
+              <span class="filter-selected-count">0 de 0</span>
+            </div>
+            <div class="filter-options"></div>
+          </div>
+        </div>
+
+        <!-- Nível -->
+        <div class="dropdown" data-filter-key="nivel">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-layers filter-btn-icon"></i>
+            <span class="filter-btn-text">
+              <span class="filter-btn-label">Nível</span>
+              <span class="filter-btn-value">Carregando…</span>
+            </span>
+            <i class="bi bi-chevron-down filter-btn-arrow"></i>
+          </button>
+          <div class="dropdown-menu filter-dropdown">
+            <div class="filter-actions">
+              <button type="button" data-action="all">Marcar todos</button>
+              <button type="button" data-action="none">Limpar</button>
+              <span class="filter-selected-count">0 de 0</span>
+            </div>
+            <div class="filter-options"></div>
+          </div>
+        </div>
+
+        <!-- Município -->
+        <div class="dropdown" data-filter-key="municipio">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-geo-alt filter-btn-icon"></i>
+            <span class="filter-btn-text">
+              <span class="filter-btn-label">Município</span>
+              <span class="filter-btn-value">Carregando…</span>
+            </span>
+            <i class="bi bi-chevron-down filter-btn-arrow"></i>
+          </button>
+          <div class="dropdown-menu filter-dropdown">
+            <div class="filter-search"><i class="bi bi-search"></i>
+              <input type="search" class="filter-search-input" placeholder="Buscar município..."></div>
+            <div class="filter-actions">
+              <button type="button" data-action="all">Marcar todos</button>
+              <button type="button" data-action="none">Limpar</button>
+              <span class="filter-selected-count">0 de 0</span>
+            </div>
+            <div class="filter-options"></div>
+          </div>
+        </div>
+
+        <!-- Escola -->
+        <div class="dropdown" data-filter-key="escola">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-mortarboard filter-btn-icon"></i>
+            <span class="filter-btn-text">
+              <span class="filter-btn-label">Escola</span>
+              <span class="filter-btn-value">Carregando…</span>
+            </span>
+            <i class="bi bi-chevron-down filter-btn-arrow"></i>
+          </button>
+          <div class="dropdown-menu filter-dropdown">
+            <div class="filter-search"><i class="bi bi-search"></i>
+              <input type="search" class="filter-search-input" placeholder="Buscar escola..."></div>
+            <div class="filter-actions">
+              <button type="button" data-action="all">Marcar todos</button>
+              <button type="button" data-action="none">Limpar</button>
+              <span class="filter-selected-count">0 de 0</span>
+            </div>
+            <div class="filter-options"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="card border-0 shadow-sm" style="border-radius:16px;">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -730,7 +801,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 
   <footer class="footer">
     <div class="mb-1"><strong>Dashboard OBMEP</strong> · Histórico 2005-2025</div>
-    <div class="small">Fontes suportadas: <em>CSV · TXT · XLSX · JSON</em></div>
+    <div class="small">Fontes: <em>CSV · TXT · XLSX · JSON</em></div>
     <div class="small mt-1">Última atualização: <span id="lastUpdate">—</span></div>
   </footer>
 </main>
@@ -763,7 +834,7 @@ const DATA_CANDIDATES = [
 ];
 const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;
 const REFRESH_EMPTY_MS    = 30 * 1000;
-const DROPDOWN_KEYS = ['ano','nivel','municipio','crede'];
+const DROPDOWN_KEYS = ['ano','nivel','municipio','escola','crede'];
 
 const COLORS = {
   ouro:'#f59e0b', prata:'#94a3b8', bronze:'#b45309', mencao:'#8b5cf6',
@@ -794,6 +865,11 @@ function num(v){
 const str = v => v == null ? '' : String(v).trim();
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const fmtBR = n => Number(n).toLocaleString('pt-BR');
+const matchRMF = (rowVal, filterVal) => {
+  if (filterVal === '1') return /^(1|sim|s|true)$/i.test(rowVal);
+  if (filterVal === '0') return /^(0|nao|não|n|false)$/i.test(rowVal);
+  return true;
+};
 
 /* =========================================================
    NORMALIZAÇÃO
@@ -831,7 +907,6 @@ function normalizeRow(row){
   }
   return out;
 }
-
 function parseJSONData(text){
   const parsed = JSON.parse(text);
   if (Array.isArray(parsed)) return parsed;
@@ -839,529 +914,4 @@ function parseJSONData(text){
   for (const k of tryKeys) if (Array.isArray(parsed[k])) return parsed[k];
   for (const k in parsed) if (Array.isArray(parsed[k])) return parsed[k];
   const vals = Object.values(parsed);
-  if (vals.length && typeof vals[0] === 'object') return vals;
-  throw new Error('JSON inválido.');
-}
-
-/* =========================================================
-   LEITURA
-========================================================= */
-async function loadData(){
-  showLoading('Buscando arquivo de dados...');
-  for (const url of DATA_CANDIDATES){
-    try {
-      const resp = await fetch(url, { cache:'no-store' });
-      if (!resp.ok) continue;
-      const lower = url.toLowerCase();
-      let rows;
-
-      if (lower.endsWith('.xlsx') || lower.endsWith('.xls')){
-        const buf = await resp.arrayBuffer();
-        const wb = XLSX.read(buf, { type:'array' });
-        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' });
-      } else if (lower.endsWith('.json')){
-        rows = parseJSONData(await resp.text());
-      } else {
-        const text = await resp.text();
-        if (!text || text.length < 10) continue;
-        const parsed = Papa.parse(text, { header:true, skipEmptyLines:'greedy' });
-        rows = parsed.data;
-        if (rows.length && Object.keys(rows[0]).length === 1){
-          const alt = Papa.parse(text, { header:true, skipEmptyLines:'greedy', delimiter:';' });
-          if (Object.keys(alt.data[0]||{}).length > 1) rows = alt.data;
-        }
-      }
-      if (!rows || !rows.length) continue;
-      const norm = rows.map(normalizeRow).filter(r => r.escola || r.municipio || r.ano);
-      if (!norm.length) continue;
-
-      rawData = norm;
-      console.log(`✅ ${norm.length} registros carregados de: ${url}`);
-      hideEmptyState();
-      buildFilterOptions();
-      applyFilters();
-      updateLastUpdate();
-      updateStatus(true);
-      hideLoading();
-      return true;
-    } catch(e){ console.warn('Falha em', url, e); }
-  }
-
-  rawData = [];
-  filteredData = [];
-  showEmptyState();
-  updateStatus(false);
-  hideLoading();
-  return false;
-}
-
-/* =========================================================
-   EMPTY STATE / STATUS
-========================================================= */
-function showEmptyState(){ document.body.classList.add('is-empty'); }
-function hideEmptyState(){ document.body.classList.remove('is-empty'); }
-function updateStatus(hasData){
-  const el = document.getElementById('statusBadge');
-  if (hasData){
-    el.className = 'badge bg-success';
-    el.innerHTML = '<i class="bi bi-cloud-check me-1"></i>Conectado';
-  } else {
-    el.className = 'badge bg-danger';
-    el.innerHTML = '<i class="bi bi-cloud-slash me-1"></i>Sem arquivo';
-  }
-}
-
-/* =========================================================
-   DROPDOWNS (novos filtros)
-========================================================= */
-function uniqSort(arr){
-  return [...new Set(arr.filter(v => v !== ''))].sort((a,b) => {
-    const na = parseFloat(a), nb = parseFloat(b);
-    if (!isNaN(na) && !isNaN(nb)) return na - nb;
-    return a.localeCompare(b, 'pt-BR');
-  });
-}
-
-function getDropdownSelected(key){
-  const dd = document.querySelector(`.dropdown[data-filter-key="${key}"]`);
-  if (!dd) return [];
-  return Array.from(dd.querySelectorAll('.filter-options input[type="checkbox"]:checked')).map(i => i.value);
-}
-
-function setDropdownSelected(key, values){
-  const dd = document.querySelector(`.dropdown[data-filter-key="${key}"]`);
-  if (!dd) return;
-  const set = new Set(values || []);
-  dd.querySelectorAll('.filter-options input[type="checkbox"]').forEach(i => {
-    i.checked = set.has(i.value);
-  });
-  updateDropdownLabel(key);
-}
-
-function updateDropdownLabel(key){
-  const dd = document.querySelector(`.dropdown[data-filter-key="${key}"]`);
-  if (!dd) return;
-  const checkboxes = dd.querySelectorAll('.filter-options input[type="checkbox"]');
-  const total = checkboxes.length;
-  const selected = dd.querySelectorAll('.filter-options input[type="checkbox"]:checked').length;
-  const valEl = dd.querySelector('.filter-btn-value');
-  const cntEl = dd.querySelector('.filter-selected-count');
-
-  if (total === 0){
-    valEl.textContent = '—';
-    dd.classList.remove('has-selection');
-    if (cntEl) cntEl.textContent = '0 de 0';
-    return;
-  }
-
-  if (selected === 0 || selected === total){
-    valEl.textContent = `Todos (${total})`;
-    dd.classList.remove('has-selection');
-  } else {
-    valEl.textContent = `${selected} de ${total}`;
-    dd.classList.add('has-selection');
-  }
-  if (cntEl) cntEl.textContent = `${selected} de ${total}`;
-}
-
-function buildDropdownFilter(key, values){
-  const dd = document.querySelector(`.dropdown[data-filter-key="${key}"]`);
-  if (!dd) return;
-  const optionsEl = dd.querySelector('.filter-options');
-  optionsEl.innerHTML = '';
-
-  if (!values || !values.length){
-    optionsEl.innerHTML = '<div class="filter-option empty">Sem valores disponíveis</div>';
-    updateDropdownLabel(key);
-    return;
-  }
-
-  const frag = document.createDocumentFragment();
-  values.forEach(v => {
-    const label = document.createElement('label');
-    label.className = 'filter-option';
-    const safe = escapeHtml(v);
-    label.innerHTML = `<input type="checkbox" value="${safe}"> <span>${safe}</span>`;
-    frag.appendChild(label);
-  });
-  optionsEl.appendChild(frag);
-  updateDropdownLabel(key);
-}
-
-function buildFilterOptions(){
-  buildDropdownFilter('ano',       uniqSort(rawData.map(r=>r.ano)));
-  buildDropdownFilter('nivel',     uniqSort(rawData.map(r=>r.nivel)));
-  buildDropdownFilter('municipio', uniqSort(rawData.map(r=>r.municipio)));
-  buildDropdownFilter('crede',     uniqSort(rawData.map(r=>r.crede)));
-}
-
-function bindDropdownEvents(){
-  document.querySelectorAll('.dropdown[data-filter-key]').forEach(dd => {
-    const key = dd.dataset.filterKey;
-    const optionsEl = dd.querySelector('.filter-options');
-    const search = dd.querySelector('.filter-search-input');
-
-    // Busca interna
-    if (search){
-      search.addEventListener('input', () => {
-        const q = search.value.toLowerCase().trim();
-        optionsEl.querySelectorAll('.filter-option').forEach(opt => {
-          const text = opt.textContent.toLowerCase();
-          opt.classList.toggle('hidden', q !== '' && !text.includes(q));
-        });
-      });
-      // Impede Bootstrap de fechar ao clicar no input
-      search.addEventListener('click', e => e.stopPropagation());
-    }
-
-    // Toggle de checkbox
-    optionsEl.addEventListener('change', e => {
-      if (e.target.matches('input[type="checkbox"]')){
-        updateDropdownLabel(key);
-        applyFilters();
-      }
-    });
-
-    // Ações "Marcar todos" / "Limpar"
-    dd.querySelectorAll('[data-action]').forEach(btnAction => {
-      btnAction.addEventListener('click', e => {
-        e.stopPropagation();
-        const action = btnAction.dataset.action;
-        if (action === 'all'){
-          optionsEl.querySelectorAll('.filter-option:not(.hidden) input[type="checkbox"]')
-                   .forEach(i => { i.checked = true; });
-        } else if (action === 'none'){
-          optionsEl.querySelectorAll('input[type="checkbox"]')
-                   .forEach(i => { i.checked = false; });
-        }
-        updateDropdownLabel(key);
-        applyFilters();
-      });
-    });
-
-    // Autofocus na busca ao abrir (desktop)
-    if (search && window.matchMedia('(min-width: 768px)').matches){
-      dd.addEventListener('shown.bs.dropdown', () => {
-        setTimeout(() => { try { search.focus({ preventScroll: true }); } catch(e){} }, 30);
-      });
-    }
-
-    // Reset da busca ao fechar
-    dd.addEventListener('hidden.bs.dropdown', () => {
-      if (search) search.value = '';
-      optionsEl.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('hidden'));
-    });
-  });
-}
-
-/* =========================================================
-   FILTROS — aplicar
-========================================================= */
-function applyFilters(){
-  if (!rawData.length){ filteredData = []; return; }
-
-  const anos   = getDropdownSelected('ano');
-  const niveis = getDropdownSelected('nivel');
-  const munis  = getDropdownSelected('municipio');
-  const credes = getDropdownSelected('crede');
-  const rmf    = document.getElementById('filterRMF').value;
-  const tipos  = {
-    ouro:   document.getElementById('tipoOuro').checked,
-    prata:  document.getElementById('tipoPrata').checked,
-    bronze: document.getElementById('tipoBronze').checked,
-    mencao: document.getElementById('tipoMencao').checked
-  };
-
-  filteredData = rawData.filter(r => {
-    if (anos.length   && !anos.includes(r.ano)) return false;
-    if (niveis.length && !niveis.includes(r.nivel)) return false;
-    if (munis.length  && !munis.includes(r.municipio)) return false;
-    if (credes.length && !credes.includes(r.crede)) return false;
-    if (rmf === '1' && !/^(1|sim|s|true)$/i.test(r.rmf)) return false;
-    if (rmf === '0' && !/^(0|nao|não|n|false)$/i.test(r.rmf)) return false;
-    if (!tipos.ouro   && r.ouro   > 0) return false;
-    if (!tipos.prata  && r.prata  > 0) return false;
-    if (!tipos.bronze && r.bronze > 0) return false;
-    if (!tipos.mencao && r.mencao > 0) return false;
-    return true;
-  });
-
-  renderAll();
-}
-
-function clearFilters(){
-  DROPDOWN_KEYS.forEach(key => {
-    const dd = document.querySelector(`.dropdown[data-filter-key="${key}"]`);
-    if (dd) dd.querySelectorAll('input[type="checkbox"]').forEach(i => { i.checked = false; });
-    updateDropdownLabel(key);
-  });
-  document.getElementById('filterRMF').value = '';
-  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => {
-    document.getElementById(id).checked = true;
-  });
-  applyFilters();
-}
-
-/* =========================================================
-   TABS
-========================================================= */
-function showTab(tab){
-  currentTab = tab;
-  document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
-  const view = document.getElementById('view-' + tab);
-  if (view) view.classList.add('active');
-
-  document.querySelectorAll('.sidebar .nav-link[data-tab]').forEach(el => {
-    el.classList.toggle('active', el.dataset.tab === tab);
-    el.setAttribute('aria-selected', el.dataset.tab === tab);
-  });
-
-  if (tab === 'graficos')     setTimeout(renderAllCharts, 60);
-  else if (tab === 'tabela')  renderTable();
-
-  if (window.innerWidth < 768){
-    document.getElementById('sidebar').classList.remove('show');
-    document.getElementById('backdrop').classList.remove('show');
-  }
-}
-
-/* =========================================================
-   RENDER
-========================================================= */
-function setText(id, v){ const e = document.getElementById(id); if (e) e.textContent = v; }
-
-function groupSum(keyFn, valFn){
-  const m = {};
-  filteredData.forEach(r => {
-    const k = keyFn(r);
-    if (!k) return;
-    m[k] = (m[k]||0) + valFn(r);
-  });
-  return m;
-}
-function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
-
-function renderAll(){
-  renderKPIs();
-  renderInsights();
-  renderDestaques();
-  if (currentTab === 'graficos') renderAllCharts();
-  if (currentTab === 'tabela')   renderTable();
-}
-
-function renderKPIs(){
-  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
-  const anosS = new Set(), muniS = new Set(), escS = new Set();
-  filteredData.forEach(r => {
-    t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao;
-    if (r.ano) anosS.add(r.ano);
-    if (r.municipio) muniS.add(r.municipio);
-    if (r.escola) escS.add(r.escola);
-  });
-  setText('kpiTotal',      fmtBR(t.ouro + t.prata + t.bronze));
-  setText('kpiOuro',       fmtBR(t.ouro));
-  setText('kpiPrata',      fmtBR(t.prata));
-  setText('kpiBronze',     fmtBR(t.bronze));
-  setText('kpiMencao',     fmtBR(t.mencao));
-  setText('kpiEscolas',    fmtBR(escS.size));
-  setText('kpiMunicipios', fmtBR(muniS.size));
-  setText('kpiAnos',       fmtBR(anosS.size));
-}
-
-function renderInsights(){
-  const list = document.getElementById('insightsList');
-  if (!list) return;
-  const total = filteredData.reduce((s,r)=>s+r.ouro+r.prata+r.bronze,0);
-  const ouros = filteredData.reduce((s,r)=>s+r.ouro,0);
-  if (total === 0){
-    list.innerHTML = '<li class="text-muted"><i class="bi bi-info-circle"></i><span>Sem dados para os filtros atuais.</span></li>';
-    return;
-  }
-  const items = [];
-  items.push(`<li><i class="bi bi-trophy-fill text-warning"></i><span><strong>${(ouros/total*100).toFixed(1)}%</strong> das medalhas foram de ouro (${fmtBR(ouros)} de ${fmtBR(total)})</span></li>`);
-
-  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze);
-  const topMuni = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
-  if (topMuni) items.push(`<li><i class="bi bi-geo-alt-fill text-danger"></i><span><strong>${escapeHtml(topMuni[0])}</strong> lidera com <strong>${fmtBR(topMuni[1])}</strong> medalhas (${(topMuni[1]/total*100).toFixed(1)}%)</span></li>`);
-
-  const anoM = groupSum(r=>r.ano, r=>r.ouro+r.prata+r.bronze);
-  const anos = Object.keys(anoM).sort((a,b)=>parseFloat(a)-parseFloat(b));
-  if (anos.length >= 2){
-    const diff = anoM[anos[anos.length-1]] - anoM[anos[0]];
-    items.push(`<li><i class="bi bi-graph-up-arrow text-${diff>=0?'success':'danger'}"></i><span>Entre <strong>${anos[0]}</strong> e <strong>${anos[anos.length-1]}</strong> o total ${diff>=0?'cresceu':'recuou'} ${diff>=0?'↑':'↓'} <strong>${fmtBR(Math.abs(diff))}</strong></span></li>`);
-  }
-  const topAno = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
-  if (topAno) items.push(`<li><i class="bi bi-calendar-event text-primary"></i><span>Edição de <strong>${topAno[0]}</strong> foi recorde: <strong>${fmtBR(topAno[1])}</strong> medalhas</span></li>`);
-  list.innerHTML = items.join('');
-}
-
-function renderDestaques(){
-  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze);
-  const escM  = groupSum(r=>r.escola,    r=>r.ouro+r.prata+r.bronze);
-  const anoM  = groupSum(r=>r.ano,       r=>r.ouro+r.prata+r.bronze);
-  const tM = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
-  const tE = Object.entries(escM).sort((a,b)=>b[1]-a[1])[0];
-  const tA = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
-  setText('destaqueMuni',      tM ? tM[0] : '—');
-  setText('destaqueMuniQty',   tM ? `${fmtBR(tM[1])} medalhas` : '—');
-  setText('destaqueEscola',    tE ? tE[0] : '—');
-  setText('destaqueEscolaQty', tE ? `${fmtBR(tE[1])} medalhas` : '—');
-  setText('destaqueAno',       tA ? tA[0] : '—');
-  setText('destaqueAnoQty',    tA ? `${fmtBR(tA[1])} medalhas` : '—');
-}
-
-/* =========================================================
-   CHART OPTIONS
-========================================================= */
-const baseOpts = (horizontal=false) => ({
-  responsive:true, maintainAspectRatio:false,
-  indexAxis: horizontal ? 'y' : 'x',
-  animation:{ duration:550, easing:'easeOutQuart' },
-  plugins:{
-    legend:{ display:false },
-    datalabels:{
-      color:'#0f172a', backgroundColor:'rgba(255,255,255,.82)',
-      borderRadius:4, padding:{ top:2, bottom:2, left:5, right:5 },
-      font:{ size:11, weight:'700' },
-      anchor:'end', align:'end', offset:4,
-      formatter:v => v > 0 ? Number(v).toLocaleString('pt-BR') : ''
-    },
-    tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8, titleFont:{ size:13, weight:'700' }, bodyFont:{ size:12 } }
-  },
-  scales:{
-    x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{ size:12 }, color:'#475569', maxRotation: horizontal ? 0 : 45 } },
-    y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{ size:12 }, color:'#475569' }, beginAtZero:true }
-  }
-});
-function showChartEmpty(id, msg='Sem dados para os filtros atuais'){
-  const c = document.getElementById(id); if (!c) return;
-  const p = c.parentElement;
-  if (p.querySelector('.chart-empty-overlay')) return;
-  const d = document.createElement('div');
-  d.className = 'chart-empty-overlay';
-  d.innerHTML = `<i class="bi bi-bar-chart"></i><span>${msg}</span>`;
-  p.appendChild(d);
-}
-function clearChartEmpty(id){
-  const c = document.getElementById(id); if (!c) return;
-  const ov = c.parentElement.querySelector('.chart-empty-overlay');
-  if (ov) ov.remove();
-}
-
-/* =========================================================
-   CHARTS
-========================================================= */
-function renderChartAno(){
-  const m = groupSum(r => r.ano, r => r.ouro + r.prata + r.bronze);
-  const labels = Object.keys(m).sort((a,b) => parseFloat(a) - parseFloat(b));
-  const data = labels.map(l => m[l]);
-  destroyChart('chartAno'); clearChartEmpty('chartAno');
-  if (!data.some(v => v > 0)){ showChartEmpty('chartAno'); return; }
-  charts.chartAno = new Chart(document.getElementById('chartAno'), {
-    type:'bar',
-    data:{ labels, datasets:[{ label:'Medalhas', data, backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:44 }] },
-    options: baseOpts()
-  });
-}
-function renderChartTipo(){
-  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
-  filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
-  const total = t.ouro + t.prata + t.bronze + t.mencao;
-  destroyChart('chartTipo'); clearChartEmpty('chartTipo');
-  if (total === 0){ showChartEmpty('chartTipo'); return; }
-  charts.chartTipo = new Chart(document.getElementById('chartTipo'), {
-    type:'doughnut',
-    data:{
-      labels:['Ouro','Prata','Bronze','Menção'],
-      datasets:[{
-        data:[t.ouro, t.prata, t.bronze, t.mencao],
-        backgroundColor:[COLORS.ouro, COLORS.prata, COLORS.bronze, COLORS.mencao],
-        borderWidth:3, borderColor:'#fff', hoverOffset:6
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, cutout:'55%',
-      plugins:{
-        legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{ size:12, weight:'600' } } },
-        datalabels:{
-          color:'#fff', font:{ size:12, weight:'800' },
-          formatter:(v, ctx) => {
-            const s = ctx.dataset.data.reduce((a,b)=>a+b,0);
-            return (!s || v === 0) ? '' : v + '\n' + (v/s*100).toFixed(0) + '%';
-          },
-          textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2
-        },
-        tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8,
-          callbacks:{ label: ctx => {
-            const s = ctx.dataset.data.reduce((a,b)=>a+b,0);
-            return `${ctx.label}: ${ctx.parsed} (${s ? (ctx.parsed/s*100).toFixed(1) : 0}%)`;
-          }}
-        }
-      }
-    }
-  });
-}
-function renderChartMunicipio(){
-  const m = groupSum(r => r.municipio, r => r.ouro + r.prata + r.bronze);
-  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  destroyChart('chartMunicipio'); clearChartEmpty('chartMunicipio');
-  if (!top.length || top[0][1] === 0){ showChartEmpty('chartMunicipio'); return; }
-  charts.chartMunicipio = new Chart(document.getElementById('chartMunicipio'), {
-    type:'bar',
-    data:{ labels: top.map(x=>x[0]), datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.green, borderRadius:6, maxBarThickness:26 }] },
-    options: baseOpts(true)
-  });
-}
-function renderChartEscola(){
-  const m = groupSum(r => r.escola, r => r.ouro + r.prata + r.bronze);
-  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  destroyChart('chartEscola'); clearChartEmpty('chartEscola');
-  if (!top.length || top[0][1] === 0){ showChartEmpty('chartEscola'); return; }
-  charts.chartEscola = new Chart(document.getElementById('chartEscola'), {
-    type:'bar',
-    data:{
-      labels: top.map(x => x[0].length > 26 ? x[0].slice(0,26)+'…' : x[0]),
-      datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:26 }]
-    },
-    options: baseOpts(true)
-  });
-}
-function renderChartNivel(){
-  const o = groupSum(r=>r.nivel, r=>r.ouro);
-  const p = groupSum(r=>r.nivel, r=>r.prata);
-  const b = groupSum(r=>r.nivel, r=>r.bronze);
-  const niveis = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b)])].sort();
-  const total = niveis.reduce((s,n)=>s+(o[n]||0)+(p[n]||0)+(b[n]||0),0);
-  destroyChart('chartNivel'); clearChartEmpty('chartNivel');
-  if (total === 0){ showChartEmpty('chartNivel'); return; }
-  charts.chartNivel = new Chart(document.getElementById('chartNivel'), {
-    type:'bar',
-    data:{
-      labels: niveis.map(n => 'Nível ' + n),
-      datasets:[
-        { label:'Ouro',  data: niveis.map(n=>o[n]||0), backgroundColor:COLORS.ouro,  borderRadius:4, maxBarThickness:60 },
-        { label:'Prata', data: niveis.map(n=>p[n]||0), backgroundColor:COLORS.prata, borderRadius:4, maxBarThickness:60 },
-        { label:'Bronze',data: niveis.map(n=>b[n]||0), backgroundColor:COLORS.bronze,borderRadius:4, maxBarThickness:60 }
-      ]
-    },
-    options:{
-      ...baseOpts(),
-      plugins:{
-        legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{ size:12, weight:'600' } } },
-        datalabels:{ color:'#fff', font:{ size:11, weight:'700' }, formatter:v => v > 0 ? v : '', textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 }
-      },
-      scales:{
-        x:{ stacked:true, grid:{ display:false }, ticks:{ font:{ size:12 }, color:'#475569' } },
-        y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{ size:12 }, color:'#475569' } }
-      }
-    }
-  });
-}
-function renderChartEvolucao(){
-  const o = groupSum(r=>r.ano, r=>r.ouro);
-  const p = groupSum(r=>r.ano, r=>r.prata);
-  const b = groupSum(r=>r.ano, r=>r.bronze);
-  const m = groupSum(r=>r.ano, r=>r.mencao);
-  const anos = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b),...Object.keys(m)])].sort((a,b)=>parseFloat(a)-parseFloat(b));
-  destroyChart('chartEvolucao'); clearChartEmpty('chartEvolucao');
-  if (!anos.length){ showChart
+  if (vals.length && typeof vals[0] ===
