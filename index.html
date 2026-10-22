@@ -95,12 +95,14 @@ body.high-contrast .stat-table .total-row{background:#1c1c1c;border-color:#444;}
 .empty-state-card h4{font-weight:800;color:#1e293b;margin-bottom:.75rem;}
 .empty-state-card p{color:#475569;margin-bottom:.75rem;}
 
-.file-upload-zone{background:#eff6ff;border:2px dashed #60a5fa;border-radius:14px;padding:1.25rem;margin:.75rem auto;max-width:480px;cursor:pointer;transition:all .2s;}
-.file-upload-zone:hover,.file-upload-zone.dragover{background:#dbeafe;border-color:#2563eb;transform:translateY(-2px);}
-.file-upload-zone .fuz-icon{font-size:2.5rem;color:#2563eb;margin-bottom:.35rem;}
-.file-upload-zone .fuz-title{font-weight:800;color:#1e3a8a;margin-bottom:.2rem;}
-.file-upload-zone .fuz-sub{font-size:.78rem;color:#475569;}
-.file-upload-zone input[type=file]{display:none;}
+/* === AUTO-RETRY STATUS === */
+.retry-box{background:#eff6ff;border:2px dashed #60a5fa;border-radius:14px;padding:1.25rem;margin:1rem auto;max-width:480px;text-align:center;}
+.retry-box .retry-icon{font-size:2.2rem;color:#2563eb;margin-bottom:.5rem;animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
+.retry-box .retry-title{font-weight:800;color:#1e3a8a;margin-bottom:.35rem;}
+.retry-box .retry-sub{font-size:.82rem;color:#475569;}
+.retry-countdown{display:inline-flex;align-items:center;gap:.4rem;background:#dbeafe;color:#1e40af;border-radius:20px;padding:.35rem .9rem;margin-top:.75rem;font-weight:700;font-size:.88rem;}
+.retry-countdown .num{font-variant-numeric:tabular-nums;min-width:24px;text-align:center;font-size:1rem;}
 
 .diag{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:.75rem;margin-top:1rem;text-align:left;font-size:.8rem;}
 .diag summary{cursor:pointer;font-weight:700;color:#92400e;}
@@ -164,7 +166,6 @@ body.high-contrast .stat-table .total-row{background:#1c1c1c;border-color:#444;}
 .medal-badge.bronze{background:#ffedd5;color:#9a3412;}
 .medal-badge.mencao{background:#ede9fe;color:#5b21b6;}
 
-/* === ESTATÍSTICAS: tabelas síntese === */
 .stat-table{font-size:.85rem;width:100%;border-collapse:collapse;}
 .stat-table thead th{background:#f1f5f9;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;padding:.55rem .6rem;color:#475569;border-bottom:2px solid #e2e8f0;font-weight:700;position:sticky;top:0;z-index:1;}
 .stat-table tbody td{padding:.45rem .6rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
@@ -255,22 +256,31 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
       <button class="btn btn-outline-secondary" onclick="resetFont()">A</button>
       <button class="btn btn-outline-secondary" onclick="changeFont(1)">A+</button>
       <button class="btn btn-outline-secondary" onclick="toggleContrast()"><i class="bi bi-circle-half"></i></button>
-      <button class="btn btn-outline-secondary" onclick="reloadData()"><i class="bi bi-arrow-clockwise"></i></button>
+      <button class="btn btn-outline-secondary" onclick="forceReload()" title="Forçar nova busca"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
   <section class="empty-state" id="emptyState" aria-live="polite">
     <div class="empty-state-card">
-      <div class="empty-icon"><i class="bi bi-file-earmark-x-fill"></i></div>
-      <h4>Arquivo XLSX não encontrado</h4>
-      <p>O dashboard procura por <code>Histórico_OBMEP_2005-2025_oficial.xlsx</code> na mesma pasta do <code>index.html</code> — inclusive em subpastas comuns (<code>dados/</code>, <code>assets/</code>, <code>data/</code>).</p>
-      <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('fileUpload').click()">
-        <div class="fuz-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
-        <div class="fuz-title">Selecione o arquivo manualmente</div>
-        <div class="fuz-sub">Arraste o <code>.xlsx</code> para cá ou clique para escolher</div>
-        <input type="file" id="fileUpload" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+      <div class="empty-icon"><i class="bi bi-search"></i></div>
+      <h4>Procurando o arquivo XLSX…</h4>
+      <p>O dashboard procura por <code>Histórico_OBMEP_2005-2025_oficial.xlsx</code> na mesma pasta do <code>index.html</code> — inclusive em subpastas comuns (<code>dados/</code>, <code>assets/</code>, <code>data/</code>, <code>uploads/</code>).</p>
+
+      <div class="retry-box">
+        <div class="retry-icon"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="retry-title">Busca automática ativa</div>
+        <div class="retry-sub">O sistema verifica o arquivo continuamente até encontrá-lo.</div>
+        <div class="retry-countdown">
+          <i class="bi bi-hourglass-split"></i>
+          Próxima tentativa em <span class="num" id="retryCountdown">20</span>s
+        </div>
       </div>
-      <button class="btn btn-primary mt-2" onclick="reloadData()"><i class="bi bi-arrow-clockwise me-1"></i>Tentar buscar novamente</button>
+
+      <p class="small text-muted mt-3 mb-0">
+        <i class="bi bi-info-circle me-1"></i>
+        Basta colocar o arquivo na pasta correta — a página detecta sozinha.
+      </p>
+
       <details class="diag" id="diagBox">
         <summary><i class="bi bi-bug me-1"></i>Diagnóstico técnico</summary>
         <div class="summary-info">Página: <code id="diagProtocol">—</code></div>
@@ -519,14 +529,15 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
    CONFIG
 ========================================================= */
 const BASE_NAMES = [
-  'Histórico_OBMEP_2005-2025_oficial','Historico_OBMEP_2005-2025_oficial',
-  'Histórico_OBMEP_2005_2025_oficial','Historico_OBMEP_2005_2025_oficial',
-  'historico_obmep_2005-2025_oficial','HISTORICO_OBMEP_2005-2025_OFICIAL',
+  'Histórico_OBMEP_2005-2025_oficial',
+  'Historico_OBMEP_2005-2025_oficial',
+  'Historico_OBMEP_2005_2025_oficial',
+  'historico_obmep_2005-2025_oficial'
 ];
 const EXTENSIONS = ['xlsx'];
 const PATH_PREFIXES = ['', 'dados/', 'data/', 'assets/', 'arquivos/', 'files/', 'uploads/', 'planilhas/', 'planilha/'];
-const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;
-const REFRESH_EMPTY_MS    = 30 * 1000;
+const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;   // quando já há dados, re-checa a cada 5 min
+const REFRESH_EMPTY_MS    = 20 * 1000;       // quando NÃO há dados, re-checa a cada 20s (até achar)
 const DROPDOWN_KEYS = ['ano','nivel','municipio','escola','uf'];
 const SESSION_KEY = 'obmep_xlsx_data_v3';
 
@@ -538,6 +549,8 @@ let filteredData = [];
 const charts = {};
 let currentTab = 'painel';
 let refreshTimer = null;
+let countdownTimer = null;
+let countdownSec = 0;
 const triedUrls = [];
 
 const str = v => v == null ? '' : String(v).trim();
@@ -600,13 +613,14 @@ function buildCandidates(){
       }
   return [...new Set(urls)];
 }
-async function loadData(){
+
+async function loadData(silent=false){
   triedUrls.length = 0; updateDiagProtocol();
   if (location.protocol === 'file:'){
     if (!rawData.length){ showEmptyState(); updateStatus(false); renderDiag(); }
     return false;
   }
-  showLoading('Buscando arquivo XLSX...');
+  if (!silent) showLoading('Buscando arquivo XLSX...');
   const candidates = buildCandidates();
   for (const url of candidates){
     let status = 'ERR';
@@ -629,39 +643,19 @@ async function loadData(){
       triedUrls.push({url, status:'200'});
       saveToSession();
       hideEmptyState(); buildAllDropdowns(); applyFilters();
-      updateLastUpdate(); updateStatus(true); hideLoading();
+      updateLastUpdate(); updateStatus(true);
+      if (!silent) hideLoading();
       return true;
     } catch(e){ triedUrls.push({url, status:'ERR'}); }
   }
   if (!rawData.length){
-    if (loadFromSession()){ hideLoading(); return false; }
+    if (loadFromSession()){ if (!silent) hideLoading(); return false; }
     showEmptyState(); updateStatus(false); renderDiag();
   }
-  hideLoading(); return false;
+  if (!silent) hideLoading();
+  return false;
 }
-async function loadFromFile(file){
-  if (!file) return;
-  showLoading('Lendo arquivo XLSX...');
-  try {
-    const buf = await file.arrayBuffer();
-    const rows = parseXLSX(buf);
-    const norm = (rows||[]).map(normalizeRow).filter(r => (r.escola||r.municipio||r.ano) && (r.ouro||r.prata||r.bronze||r.mencao));
-    if (!norm.length){ showAlert('Nenhuma linha válida encontrada.','danger'); hideLoading(); return; }
-    rawData = norm;
-    saveToSession(); hideEmptyState(); buildAllDropdowns(); applyFilters();
-    updateLastUpdate(); updateStatus(true); hideLoading();
-    showAlert(`✅ ${norm.length} registros carregados.`, 'success');
-  } catch(e){ showAlert('Erro ao ler XLSX: ' + e.message, 'danger'); hideLoading(); }
-}
-function bindFileUpload(){
-  const input = document.getElementById('fileUpload');
-  const zone = document.getElementById('fileUploadZone');
-  if (!input || !zone) return;
-  input.addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadFromFile(f); });
-  ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover'); }));
-  ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover'); }));
-  zone.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFromFile(f); });
-}
+
 function saveToSession(){
   try {
     const payload = JSON.stringify(rawData);
@@ -703,7 +697,7 @@ function hideEmptyState(){ document.body.classList.remove('is-empty'); }
 function updateStatus(hasData){
   const el = document.getElementById('statusBadge'); if (!el) return;
   if (hasData){ el.className = 'badge bg-success'; el.innerHTML = '<i class="bi bi-cloud-check me-1"></i>Conectado'; }
-  else { el.className = 'badge bg-danger'; el.innerHTML = '<i class="bi bi-cloud-slash me-1"></i>Sem dados'; }
+  else { el.className = 'badge bg-warning text-dark'; el.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Buscando...'; }
 }
 
 /* =========================================================
@@ -739,4 +733,664 @@ function updateDropdownLabel(key){
     const cntEl = dd.querySelector('.filter-selected-count');
     if (total === 0){ valEl.textContent = '—'; dd.classList.remove('has-selection'); if (cntEl) cntEl.textContent = '0 de 0'; return; }
     if (selected === 0 || selected === total){ valEl.textContent = `Todos (${total})`; dd.classList.remove('has-selection'); }
-    else { valEl.textContent = `${selected} de ${total
+    else { valEl.textContent = `${selected} de ${total}`; dd.classList.add('has-selection'); }
+    if (cntEl) cntEl.textContent = `${selected} de ${total}`;
+  });
+}
+function applyFiltersExcept(exceptKey, baseData){
+  const dropdownFilters = {};
+  for (const k of DROPDOWN_KEYS){ if (k === exceptKey) continue; dropdownFilters[k] = getDropdownSelected(k); }
+  const tipos = {
+    ouro:document.getElementById('tipoOuro').checked,
+    prata:document.getElementById('tipoPrata').checked,
+    bronze:document.getElementById('tipoBronze').checked,
+    mencao:document.getElementById('tipoMencao').checked
+  };
+  return baseData.filter(r => {
+    for (const k in dropdownFilters){ const sel = dropdownFilters[k]; if (sel.length && !sel.includes(r[k])) return false; }
+    if (!tipos.ouro && r.ouro > 0) return false;
+    if (!tipos.prata && r.prata > 0) return false;
+    if (!tipos.bronze && r.bronze > 0) return false;
+    if (!tipos.mencao && r.mencao > 0) return false;
+    return true;
+  });
+}
+function rebuildDropdownOptions(key){
+  const base = applyFiltersExcept(key, rawData);
+  const available = uniqSort(base.map(r => r[key]));
+  const currentlySelected = new Set(getDropdownSelected(key));
+  const allValues = [...available];
+  for (const v of currentlySelected){ if (!allValues.includes(v)) allValues.push(v); }
+  allValues.sort((a,b) => { const na = parseFloat(a), nb = parseFloat(b); if (!isNaN(na) && !isNaN(nb)) return na - nb; return a.localeCompare(b,'pt-BR'); });
+  document.querySelectorAll(`.dropdown[data-filter-key="${key}"]`).forEach(dd => {
+    const optionsEl = dd.querySelector('.filter-options');
+    optionsEl.innerHTML = '';
+    if (!allValues.length){ optionsEl.innerHTML = '<div class="filter-option empty">Sem valores</div>'; updateDropdownLabel(key); return; }
+    const frag = document.createDocumentFragment();
+    for (const v of allValues){
+      const isAvailable = available.includes(v);
+      const label = document.createElement('label');
+      label.className = 'filter-option' + (isAvailable ? '' : ' invalid');
+      const safe = escapeHtml(v);
+      const checked = currentlySelected.has(v) ? 'checked' : '';
+      const hint = isAvailable ? '' : ' <small>(sem dados)</small>';
+      label.innerHTML = `<input type="checkbox" value="${safe}" ${checked}> <span>${safe}${hint}</span>`;
+      frag.appendChild(label);
+    }
+    optionsEl.appendChild(frag);
+    updateDropdownLabel(key);
+  });
+}
+function buildAllDropdowns(){ for (const key of DROPDOWN_KEYS) rebuildDropdownOptions(key); }
+
+function bindDropdownEvents(){
+  document.querySelectorAll('.dropdown[data-filter-key]').forEach(dd => {
+    const key = dd.dataset.filterKey;
+    const optionsEl = dd.querySelector('.filter-options');
+    const search = dd.querySelector('.filter-search-input');
+    if (search){
+      search.addEventListener('input', () => {
+        const q = search.value.toLowerCase().trim();
+        optionsEl.querySelectorAll('.filter-option').forEach(opt => {
+          if (opt.classList.contains('empty')) return;
+          opt.classList.toggle('hidden', q !== '' && !opt.textContent.toLowerCase().includes(q));
+        });
+      });
+      search.addEventListener('click', e => e.stopPropagation());
+    }
+    optionsEl.addEventListener('change', e => {
+      if (e.target.matches('input[type="checkbox"]')){
+        const val = e.target.value, checked = e.target.checked;
+        document.querySelectorAll(`.dropdown[data-filter-key="${key}"] input[type="checkbox"]`).forEach(cb => { if (cb.value === val) cb.checked = checked; });
+        updateDropdownLabel(key);
+        applyFilters();
+      }
+    });
+    dd.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        if (action === 'all'){ optionsEl.querySelectorAll('.filter-option:not(.hidden):not(.empty) input[type="checkbox"]').forEach(i => { i.checked = true; }); }
+        else if (action === 'none'){ optionsEl.querySelectorAll('input[type="checkbox"]').forEach(i => { i.checked = false; }); }
+        optionsEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          document.querySelectorAll(`.dropdown[data-filter-key="${key}"] input[type="checkbox"]`).forEach(other => { if (other.value === cb.value) other.checked = cb.checked; });
+        });
+        updateDropdownLabel(key);
+        applyFilters();
+      });
+    });
+    if (search && window.matchMedia('(min-width:768px)').matches){
+      dd.addEventListener('shown.bs.dropdown', () => setTimeout(() => { try { search.focus({preventScroll:true}); } catch(e){} }, 30));
+    }
+    dd.addEventListener('hidden.bs.dropdown', () => {
+      if (search) search.value = '';
+      optionsEl.querySelectorAll('.filter-option').forEach(o => o.classList.remove('hidden'));
+    });
+  });
+}
+
+function applyFilters(){
+  if (!rawData.length){ filteredData = []; return; }
+  const anos = getDropdownSelected('ano'), niveis = getDropdownSelected('nivel'),
+        munis = getDropdownSelected('municipio'), escolas = getDropdownSelected('escola'),
+        ufs = getDropdownSelected('uf');
+  const tipos = {
+    ouro:document.getElementById('tipoOuro').checked,
+    prata:document.getElementById('tipoPrata').checked,
+    bronze:document.getElementById('tipoBronze').checked,
+    mencao:document.getElementById('tipoMencao').checked
+  };
+  filteredData = rawData.filter(r => {
+    if (anos.length && !anos.includes(r.ano)) return false;
+    if (niveis.length && !niveis.includes(r.nivel)) return false;
+    if (munis.length && !munis.includes(r.municipio)) return false;
+    if (escolas.length && !escolas.includes(r.escola)) return false;
+    if (ufs.length && !ufs.includes(r.uf)) return false;
+    if (!tipos.ouro && r.ouro > 0) return false;
+    if (!tipos.prata && r.prata > 0) return false;
+    if (!tipos.bronze && r.bronze > 0) return false;
+    if (!tipos.mencao && r.mencao > 0) return false;
+    return true;
+  });
+  buildAllDropdowns();
+  renderAll();
+}
+function clearFilters(){
+  DROPDOWN_KEYS.forEach(key => setDropdownSelected(key, []));
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => document.getElementById(id).checked = true);
+  applyFilters();
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+  const view = document.getElementById('view-' + tab);
+  if (view) view.classList.add('active');
+  document.querySelectorAll('.sidebar .nav-link[data-tab]').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  if (tab === 'graficos') setTimeout(renderAllCharts, 60);
+  else if (tab === 'estatisticas') setTimeout(renderEstatisticas, 60);
+  else if (tab === 'tabela') renderTable();
+  if (window.innerWidth < 768){
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('backdrop').classList.remove('show');
+  }
+}
+
+/* =========================================================
+   RENDER — KPIs / Insights / Destaques
+========================================================= */
+function setText(id, v){ const e = document.getElementById(id); if (e) e.textContent = v; }
+function groupSum(keyFn, valFn){
+  const m = {};
+  filteredData.forEach(r => { const k = keyFn(r); if (!k) return; m[k] = (m[k]||0) + valFn(r); });
+  return m;
+}
+function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function renderAll(){
+  renderKPIs(); renderInsights(); renderDestaques();
+  if (currentTab === 'graficos') renderAllCharts();
+  else if (currentTab === 'estatisticas') renderEstatisticas();
+  else if (currentTab === 'tabela') renderTable();
+}
+function renderKPIs(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  const anosS = new Set(), muniS = new Set(), escS = new Set();
+  filteredData.forEach(r => {
+    t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao;
+    if (r.ano) anosS.add(r.ano); if (r.municipio) muniS.add(r.municipio); if (r.escola) escS.add(r.escola);
+  });
+  setText('kpiTotal', fmtBR(t.ouro + t.prata + t.bronze + t.mencao));
+  setText('kpiOuro', fmtBR(t.ouro));
+  setText('kpiPrata', fmtBR(t.prata));
+  setText('kpiBronze', fmtBR(t.bronze));
+  setText('kpiMencao', fmtBR(t.mencao));
+  setText('kpiEscolas', fmtBR(escS.size));
+  setText('kpiMunicipios', fmtBR(muniS.size));
+  setText('kpiAnos', fmtBR(anosS.size));
+}
+function renderInsights(){
+  const list = document.getElementById('insightsList'); if (!list) return;
+  const totalPrem = filteredData.reduce((s,r)=>s+r.ouro+r.prata+r.bronze+r.mencao,0);
+  const totalMed = filteredData.reduce((s,r)=>s+r.ouro+r.prata+r.bronze,0);
+  const ouros = filteredData.reduce((s,r)=>s+r.ouro,0);
+  if (totalPrem === 0){ list.innerHTML = '<li class="text-muted"><i class="bi bi-info-circle"></i><span>Sem dados para os filtros atuais.</span></li>'; return; }
+  const items = [];
+  if (totalMed > 0) items.push(`<li><i class="bi bi-trophy-fill text-warning"></i><span><strong>${(ouros/totalMed*100).toFixed(1)}%</strong> das medalhas foram de ouro (${fmtBR(ouros)} de ${fmtBR(totalMed)})</span></li>`);
+  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const topMuni = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
+  if (topMuni) items.push(`<li><i class="bi bi-geo-alt-fill text-danger"></i><span><strong>${escapeHtml(topMuni[0])}</strong> lidera com <strong>${fmtBR(topMuni[1])}</strong> premiações (${(topMuni[1]/totalPrem*100).toFixed(1)}%)</span></li>`);
+  const anoM = groupSum(r=>r.ano, r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const anos = Object.keys(anoM).sort((a,b)=>parseFloat(a)-parseFloat(b));
+  if (anos.length >= 2){
+    const diff = anoM[anos[anos.length-1]] - anoM[anos[0]];
+    items.push(`<li><i class="bi bi-graph-up-arrow text-${diff>=0?'success':'danger'}"></i><span>Entre <strong>${anos[0]}</strong> e <strong>${anos[anos.length-1]}</strong> o total ${diff>=0?'cresceu':'recuou'} ${diff>=0?'↑':'↓'} <strong>${fmtBR(Math.abs(diff))}</strong></span></li>`);
+  }
+  const topAno = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
+  if (topAno) items.push(`<li><i class="bi bi-calendar-event text-primary"></i><span>Edição de <strong>${topAno[0]}</strong> foi recorde: <strong>${fmtBR(topAno[1])}</strong> premiações</span></li>`);
+  const escolaM = groupSum(r=>r.escola, r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const topEscola = Object.entries(escolaM).sort((a,b)=>b[1]-a[1])[0];
+  if (topEscola) items.push(`<li><i class="bi bi-building text-success"></i><span>Escola destaque: <strong>${escapeHtml(topEscola[0])}</strong> com <strong>${fmtBR(topEscola[1])}</strong> premiações</span></li>`);
+  list.innerHTML = items.join('');
+}
+function renderDestaques(){
+  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const escM  = groupSum(r=>r.escola,    r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const anoM  = groupSum(r=>r.ano,       r=>r.ouro+r.prata+r.bronze+r.mencao);
+  const tM = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
+  const tE = Object.entries(escM).sort((a,b)=>b[1]-a[1])[0];
+  const tA = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
+  setText('destaqueMuni', tM ? tM[0] : '—'); setText('destaqueMuniQty', tM ? `${fmtBR(tM[1])} premiações` : '—');
+  setText('destaqueEscola', tE ? tE[0] : '—'); setText('destaqueEscolaQty', tE ? `${fmtBR(tE[1])} premiações` : '—');
+  setText('destaqueAno', tA ? tA[0] : '—'); setText('destaqueAnoQty', tA ? `${fmtBR(tA[1])} premiações` : '—');
+}
+
+/* =========================================================
+   CHARTS
+========================================================= */
+const baseOpts = (horizontal=false) => ({
+  responsive:true, maintainAspectRatio:false, indexAxis: horizontal ? 'y' : 'x',
+  animation:{ duration:550, easing:'easeOutQuart' },
+  plugins:{
+    legend:{ display:false },
+    datalabels:{ color:'#0f172a', backgroundColor:'rgba(255,255,255,.82)', borderRadius:4, padding:{top:2,bottom:2,left:5,right:5}, font:{size:11,weight:'700'}, anchor:'end', align:'end', offset:4, formatter:v => v > 0 ? Number(v).toLocaleString('pt-BR') : '' },
+    tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8 }
+  },
+  scales:{ x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569', maxRotation: horizontal?0:45 } }, y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569' }, beginAtZero:true } }
+});
+function showChartEmpty(id, msg='Sem dados para os filtros atuais'){
+  const c = document.getElementById(id); if (!c) return;
+  const p = c.parentElement; if (p.querySelector('.chart-empty-overlay')) return;
+  const d = document.createElement('div'); d.className = 'chart-empty-overlay';
+  d.innerHTML = `<i class="bi bi-bar-chart"></i><span>${msg}</span>`; p.appendChild(d);
+}
+function clearChartEmpty(id){
+  const c = document.getElementById(id); if (!c) return;
+  const ov = c.parentElement.querySelector('.chart-empty-overlay'); if (ov) ov.remove();
+}
+function renderChartAno(){
+  const m = groupSum(r => r.ano, r => r.ouro + r.prata + r.bronze + r.mencao);
+  const labels = Object.keys(m).sort((a,b) => parseFloat(a) - parseFloat(b));
+  const data = labels.map(l => m[l]);
+  destroyChart('chartAno'); clearChartEmpty('chartAno');
+  if (!data.some(v => v > 0)){ showChartEmpty('chartAno'); return; }
+  charts.chartAno = new Chart(document.getElementById('chartAno'), { type:'bar', data:{ labels, datasets:[{ label:'Premiações', data, backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:44 }] }, options: baseOpts() });
+}
+function renderChartTipo(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
+  const total = t.ouro + t.prata + t.bronze + t.mencao;
+  destroyChart('chartTipo'); clearChartEmpty('chartTipo');
+  if (total === 0){ showChartEmpty('chartTipo'); return; }
+  charts.chartTipo = new Chart(document.getElementById('chartTipo'), {
+    type:'doughnut', data:{ labels:['🥇 Ouro','🥈 Prata','🥉 Bronze','⭐ Menção'], datasets:[{ data:[t.ouro,t.prata,t.bronze,t.mencao], backgroundColor:[COLORS.ouro,COLORS.prata,COLORS.bronze,COLORS.mencao], borderWidth:3, borderColor:'#fff', hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ color:'#fff', font:{size:12,weight:'800'}, formatter:(v,ctx) => { const s = ctx.dataset.data.reduce((a,b)=>a+b,0); return (!s || v === 0) ? '' : v + '\n' + (v/s*100).toFixed(0) + '%'; }, textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 } } }
+  });
+}
+function renderChartMunicipio(){
+  const m = groupSum(r => r.municipio, r => r.ouro + r.prata + r.bronze + r.mencao);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartMunicipio'); clearChartEmpty('chartMunicipio');
+  if (!top.length || top[0][1] === 0){ showChartEmpty('chartMunicipio'); return; }
+  charts.chartMunicipio = new Chart(document.getElementById('chartMunicipio'), { type:'bar', data:{ labels: top.map(x=>x[0]), datasets:[{ label:'Premiações', data: top.map(x=>x[1]), backgroundColor:COLORS.green, borderRadius:6, maxBarThickness:26 }] }, options: baseOpts(true) });
+}
+function renderChartEscola(){
+  const m = groupSum(r => r.escola, r => r.ouro + r.prata + r.bronze + r.mencao);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartEscola'); clearChartEmpty('chartEscola');
+  if (!top.length || top[0][1] === 0){ showChartEmpty('chartEscola'); return; }
+  charts.chartEscola = new Chart(document.getElementById('chartEscola'), { type:'bar', data:{ labels: top.map(x => x[0].length > 26 ? x[0].slice(0,26)+'…' : x[0]), datasets:[{ label:'Premiações', data: top.map(x=>x[1]), backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:26 }] }, options: baseOpts(true) });
+}
+function renderChartNivel(){
+  const o = groupSum(r=>r.nivel, r=>r.ouro), p = groupSum(r=>r.nivel, r=>r.prata), b = groupSum(r=>r.nivel, r=>r.bronze), m = groupSum(r=>r.nivel, r=>r.mencao);
+  const niveis = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b),...Object.keys(m)])].sort();
+  const total = niveis.reduce((s,n)=>s+(o[n]||0)+(p[n]||0)+(b[n]||0)+(m[n]||0),0);
+  destroyChart('chartNivel'); clearChartEmpty('chartNivel');
+  if (total === 0){ showChartEmpty('chartNivel'); return; }
+  charts.chartNivel = new Chart(document.getElementById('chartNivel'), {
+    type:'bar', data:{ labels: niveis.map(n => 'Nível ' + n), datasets:[
+      { label:'Ouro', data: niveis.map(n=>o[n]||0), backgroundColor:COLORS.ouro, borderRadius:4, maxBarThickness:60 },
+      { label:'Prata', data: niveis.map(n=>p[n]||0), backgroundColor:COLORS.prata, borderRadius:4, maxBarThickness:60 },
+      { label:'Bronze', data: niveis.map(n=>b[n]||0), backgroundColor:COLORS.bronze, borderRadius:4, maxBarThickness:60 },
+      { label:'Menção', data: niveis.map(n=>m[n]||0), backgroundColor:COLORS.mencao, borderRadius:4, maxBarThickness:60 }
+    ]},
+    options:{ ...baseOpts(), plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ color:'#fff', font:{size:11,weight:'700'}, formatter:v => v > 0 ? v : '', textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 } },
+      scales:{ x:{ stacked:true, grid:{ display:false }, ticks:{ font:{size:12}, color:'#475569' } }, y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569' } } } }
+  });
+}
+function renderChartEvolucao(){
+  const o = groupSum(r=>r.ano, r=>r.ouro), p = groupSum(r=>r.ano, r=>r.prata), b = groupSum(r=>r.ano, r=>r.bronze), m = groupSum(r=>r.ano, r=>r.mencao);
+  const anos = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b),...Object.keys(m)])].sort((a,b)=>parseFloat(a)-parseFloat(b));
+  destroyChart('chartEvolucao'); clearChartEmpty('chartEvolucao');
+  if (!anos.length){ showChartEmpty('chartEvolucao'); return; }
+  charts.chartEvolucao = new Chart(document.getElementById('chartEvolucao'), {
+    type:'line', data:{ labels: anos, datasets:[
+      { label:'Ouro', data: anos.map(a=>o[a]||0), borderColor:COLORS.ouro, backgroundColor:'rgba(245,158,11,.15)', tension:.35, fill:true, pointRadius:3, borderWidth:2 },
+      { label:'Prata', data: anos.map(a=>p[a]||0), borderColor:COLORS.prata, backgroundColor:'rgba(148,163,184,.12)', tension:.35, pointRadius:3, borderWidth:2 },
+      { label:'Bronze', data: anos.map(a=>b[a]||0), borderColor:COLORS.bronze, backgroundColor:'rgba(180,83,9,.12)', tension:.35, pointRadius:3, borderWidth:2 },
+      { label:'Menção', data: anos.map(a=>m[a]||0), borderColor:COLORS.mencao, backgroundColor:'rgba(139,92,246,.12)', tension:.35, pointRadius:3, borderWidth:2 }
+    ]},
+    options:{ ...baseOpts(), plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ display:false } } }
+  });
+}
+function renderChartTipoBar(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
+  const total = t.ouro + t.prata + t.bronze + t.mencao;
+  destroyChart('chartTipoBar'); clearChartEmpty('chartTipoBar');
+  if (total === 0){ showChartEmpty('chartTipoBar'); return; }
+  const labels = ['🥇 Ouro','🥈 Prata','🥉 Bronze','⭐ Menção'];
+  const data = [t.ouro, t.prata, t.bronze, t.mencao];
+  const bg = [COLORS.ouro, COLORS.prata, COLORS.bronze, COLORS.mencao];
+  charts.chartTipoBar = new Chart(document.getElementById('chartTipoBar'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Quantidade', data, backgroundColor:bg, borderRadius:8, maxBarThickness:64 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:550, easing:'easeOutQuart' },
+      plugins:{
+        legend:{ display:false },
+        datalabels:{ color:'#0f172a', backgroundColor:'rgba(255,255,255,.85)', borderRadius:4, padding:{top:2,bottom:2,left:5,right:5}, font:{size:12,weight:'800'}, anchor:'end', align:'end', offset:4, formatter:v => v > 0 ? fmtBR(v) : '' },
+        tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8, callbacks:{ label:(c)=> ` ${fmtBR(c.parsed.y)} premiações (${(c.parsed.y/total*100).toFixed(1)}%)` } }
+      },
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ font:{size:13,weight:'700'}, color:'#334155' } },
+        y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:11}, color:'#475569' }, beginAtZero:true }
+      }
+    }
+  });
+}
+function renderChartMencaoAno(){
+  const m = groupSum(r => r.ano, r => r.mencao);
+  const labels = Object.keys(m).sort((a,b) => parseFloat(a) - parseFloat(b));
+  const data = labels.map(l => m[l]);
+  destroyChart('chartMencaoAno'); clearChartEmpty('chartMencaoAno');
+  if (!data.some(v => v > 0)){ showChartEmpty('chartMencaoAno','Sem menções para os filtros atuais'); return; }
+  charts.chartMencaoAno = new Chart(document.getElementById('chartMencaoAno'), {
+    type:'bar', data:{ labels, datasets:[{ label:'Menções Honrosas', data, backgroundColor:COLORS.mencao, borderRadius:6, maxBarThickness:44 }] },
+    options: baseOpts()
+  });
+}
+function renderAllCharts(){
+  renderChartAno(); renderChartTipo(); renderChartMunicipio(); renderChartEscola();
+  renderChartNivel(); renderChartEvolucao(); renderChartTipoBar(); renderChartMencaoAno();
+}
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+function medalCell(v, cls){
+  if (!v) return `<span class="medal-count zero">—</span>`;
+  return `<span class="medal-count ${cls}">${fmtBR(v)}</span>`;
+}
+
+function renderEstatisticas(){
+  // KPI totals
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
+  const total = t.ouro + t.prata + t.bronze + t.mencao;
+  setText('statTotal', fmtBR(total));
+  setText('statOuro', fmtBR(t.ouro)); setText('statOuroPct', total ? (t.ouro/total*100).toFixed(1)+'%' : '0%');
+  setText('statPrata', fmtBR(t.prata)); setText('statPrataPct', total ? (t.prata/total*100).toFixed(1)+'%' : '0%');
+  setText('statBronze', fmtBR(t.bronze)); setText('statBronzePct', total ? (t.bronze/total*100).toFixed(1)+'%' : '0%');
+  setText('statMencao', fmtBR(t.mencao)); setText('statMencaoPct', total ? (t.mencao/total*100).toFixed(1)+'%' : '0%');
+
+  // Tabela por Ano
+  const byAno = {};
+  filteredData.forEach(r => {
+    const a = r.ano || '—';
+    byAno[a] = byAno[a] || { ouro:0, prata:0, bronze:0, mencao:0 };
+    byAno[a].ouro += r.ouro; byAno[a].prata += r.prata; byAno[a].bronze += r.bronze; byAno[a].mencao += r.mencao;
+  });
+  const anosSorted = Object.keys(byAno).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if (!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  const tbodyAno = document.getElementById('statTbodyAno'); tbodyAno.innerHTML = '';
+  let sO=0,sP=0,sB=0,sM=0;
+  anosSorted.forEach(a => {
+    const d = byAno[a]; const tot = d.ouro+d.prata+d.bronze+d.mencao;
+    sO+=d.ouro; sP+=d.prata; sB+=d.bronze; sM+=d.mencao;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${escapeHtml(a)}</strong></td>
+      <td class="text-center">${medalCell(d.ouro,'gold')}</td>
+      <td class="text-center">${medalCell(d.prata,'silver')}</td>
+      <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
+      <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
+      <td class="text-center"><strong>${fmtBR(tot)}</strong></td>`;
+    tbodyAno.appendChild(tr);
+  });
+  const trTot = document.createElement('tr');
+  trTot.className = 'total-row';
+  trTot.innerHTML = `<td>Total</td>
+    <td class="text-center">${fmtBR(sO)}</td>
+    <td class="text-center">${fmtBR(sP)}</td>
+    <td class="text-center">${fmtBR(sB)}</td>
+    <td class="text-center">${fmtBR(sM)}</td>
+    <td class="text-center">${fmtBR(sO+sP+sB+sM)}</td>`;
+  tbodyAno.appendChild(trTot);
+
+  // Tabela por Nível
+  const byNivel = {};
+  filteredData.forEach(r => {
+    const n = r.nivel || '—';
+    byNivel[n] = byNivel[n] || { ouro:0, prata:0, bronze:0, mencao:0 };
+    byNivel[n].ouro += r.ouro; byNivel[n].prata += r.prata; byNivel[n].bronze += r.bronze; byNivel[n].mencao += r.mencao;
+  });
+  const niveisSorted = Object.keys(byNivel).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if (!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  const tbodyNivel = document.getElementById('statTbodyNivel'); tbodyNivel.innerHTML = '';
+  let nO=0,nP=0,nB=0,nM=0;
+  niveisSorted.forEach(n => {
+    const d = byNivel[n]; const tot = d.ouro+d.prata+d.bronze+d.mencao;
+    nO+=d.ouro; nP+=d.prata; nB+=d.bronze; nM+=d.mencao;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>Nível ${escapeHtml(n)}</strong></td>
+      <td class="text-center">${medalCell(d.ouro,'gold')}</td>
+      <td class="text-center">${medalCell(d.prata,'silver')}</td>
+      <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
+      <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
+      <td class="text-center"><strong>${fmtBR(tot)}</strong></td>`;
+    tbodyNivel.appendChild(tr);
+  });
+  const trNivelTot = document.createElement('tr');
+  trNivelTot.className = 'total-row';
+  trNivelTot.innerHTML = `<td>Total</td>
+    <td class="text-center">${fmtBR(nO)}</td>
+    <td class="text-center">${fmtBR(nP)}</td>
+    <td class="text-center">${fmtBR(nB)}</td>
+    <td class="text-center">${fmtBR(nM)}</td>
+    <td class="text-center">${fmtBR(nO+nP+nB+nM)}</td>`;
+  tbodyNivel.appendChild(trNivelTot);
+
+  // Quadro de Municípios
+  const byMuni = {};
+  filteredData.forEach(r => {
+    const m = r.municipio || '—';
+    byMuni[m] = byMuni[m] || { ouro:0, prata:0, bronze:0, mencao:0 };
+    byMuni[m].ouro += r.ouro; byMuni[m].prata += r.prata; byMuni[m].bronze += r.bronze; byMuni[m].mencao += r.mencao;
+  });
+  const muniSorted = Object.entries(byMuni).map(([k,v])=>({muni:k, ...v, total:v.ouro+v.prata+v.bronze+v.mencao})).sort((a,b)=>b.total-a.total);
+  const tbodyMuni = document.getElementById('statTbodyMunicipio'); tbodyMuni.innerHTML = '';
+  if (!muniSorted.length){
+    tbodyMuni.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Sem dados</td></tr>';
+  } else {
+    muniSorted.forEach((d, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="text-center"><strong>${i+1}º</strong></td>
+        <td><strong>${escapeHtml(d.muni)}</strong></td>
+        <td class="text-center">${medalCell(d.ouro,'gold')}</td>
+        <td class="text-center">${medalCell(d.prata,'silver')}</td>
+        <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
+        <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
+        <td class="text-center"><strong>${fmtBR(d.total)}</strong></td>`;
+      tbodyMuni.appendChild(tr);
+    });
+  }
+
+  // Top 20 Escolas
+  const byEscola = {};
+  filteredData.forEach(r => {
+    const e = r.escola || '—';
+    byEscola[e] = byEscola[e] || { ouro:0, prata:0, bronze:0, mencao:0 };
+    byEscola[e].ouro += r.ouro; byEscola[e].prata += r.prata; byEscola[e].bronze += r.bronze; byEscola[e].mencao += r.mencao;
+  });
+  const escolaSorted = Object.entries(byEscola).map(([k,v])=>({escola:k, ...v, total:v.ouro+v.prata+v.bronze+v.mencao})).sort((a,b)=>b.total-a.total).slice(0,20);
+  const tbodyEscola = document.getElementById('statTbodyEscola'); tbodyEscola.innerHTML = '';
+  if (!escolaSorted.length){
+    tbodyEscola.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Sem dados</td></tr>';
+  } else {
+    escolaSorted.forEach((d, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="text-center"><strong>${i+1}º</strong></td>
+        <td>${escapeHtml(d.escola)}</td>
+        <td class="text-center">${medalCell(d.ouro,'gold')}</td>
+        <td class="text-center">${medalCell(d.prata,'silver')}</td>
+        <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
+        <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
+        <td class="text-center"><strong>${fmtBR(d.total)}</strong></td>`;
+      tbodyEscola.appendChild(tr);
+    });
+  }
+
+  // Destaques Estatísticos
+  const destEl = document.getElementById('statDestaques');
+  if (!total){
+    destEl.innerHTML = '<li class="text-muted"><i class="bi bi-info-circle"></i><span>Sem dados para os filtros atuais.</span></li>';
+  } else {
+    const items = [];
+    const media = total / Math.max(1, anosSorted.length);
+    items.push(`<li><i class="bi bi-calculator text-primary"></i><span>Média de <strong>${media.toFixed(1)}</strong> premiações por edição (${anosSorted.length} edições)</span></li>`);
+
+    const ouroMuni = Object.entries(byMuni).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
+    if (ouroMuni && ouroMuni[1].ouro > 0) items.push(`<li><i class="bi bi-trophy-fill text-warning"></i><span><strong>${escapeHtml(ouroMuni[0])}</strong> lidera em ouros: <strong>${fmtBR(ouroMuni[1].ouro)}</strong> 🥇</span></li>`);
+
+    const ouroEscola = Object.entries(byEscola).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
+    if (ouroEscola && ouroEscola[1].ouro > 0) items.push(`<li><i class="bi bi-building text-success"></i><span>Escola com mais ouros: <strong>${escapeHtml(ouroEscola[0])}</strong> (${fmtBR(ouroEscola[1].ouro)} 🥇)</span></li>`);
+
+    const mencaoAno = Object.entries(byAno).sort((a,b)=>b[1].mencao-a[1].mencao)[0];
+    if (mencaoAno && mencaoAno[1].mencao > 0) items.push(`<li><i class="bi bi-star-fill text-primary"></i><span>Ano com mais menções: <strong>${mencaoAno[0]}</strong> (${fmtBR(mencaoAno[1].mencao)} ⭐)</span></li>`);
+
+    const ouroAno = Object.entries(byAno).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
+    if (ouroAno && ouroAno[1].ouro > 0) items.push(`<li><i class="bi bi-award-fill text-warning"></i><span>Ano recordista em ouros: <strong>${ouroAno[0]}</strong> (${fmtBR(ouroAno[1].ouro)} 🥇)</span></li>`);
+
+    const nivelTop = Object.entries(byNivel).map(([k,v])=>({nivel:k, tot:v.ouro+v.prata+v.bronze+v.mencao})).sort((a,b)=>b.tot-a.tot)[0];
+    if (nivelTop && nivelTop.tot > 0) items.push(`<li><i class="bi bi-layers text-primary"></i><span>Nível com mais premiações: <strong>Nível ${escapeHtml(nivelTop.nivel)}</strong> (${fmtBR(nivelTop.tot)} no total)</span></li>`);
+
+    const pctMedalhas = ((t.ouro + t.prata + t.bronze) / total * 100).toFixed(1);
+    items.push(`<li><i class="bi bi-pie-chart-fill text-primary"></i><span><strong>${pctMedalhas}%</strong> do total são medalhas (ouro/prata/bronze); <strong>${(100 - parseFloat(pctMedalhas)).toFixed(1)}%</strong> são menções honrosas</span></li>`);
+
+    destEl.innerHTML = items.join('');
+  }
+
+  // Chart composição por edição (empilhado vertical)
+  renderStatChartAnoTipo(byAno, anosSorted);
+}
+
+function renderStatChartAnoTipo(byAno, anosSorted){
+  destroyChart('statChartAnoTipo'); clearChartEmpty('statChartAnoTipo');
+  if (!anosSorted || !anosSorted.length){ showChartEmpty('statChartAnoTipo'); return; }
+  const o = anosSorted.map(a => byAno[a].ouro);
+  const p = anosSorted.map(a => byAno[a].prata);
+  const b = anosSorted.map(a => byAno[a].bronze);
+  const m = anosSorted.map(a => byAno[a].mencao);
+  if (![...o,...p,...b,...m].some(v=>v>0)){ showChartEmpty('statChartAnoTipo'); return; }
+  charts.statChartAnoTipo = new Chart(document.getElementById('statChartAnoTipo'), {
+    type:'bar',
+    data:{
+      labels: anosSorted,
+      datasets:[
+        { label:'Ouro',   data:o, backgroundColor:COLORS.ouro,   borderRadius:3, maxBarThickness:44 },
+        { label:'Prata',  data:p, backgroundColor:COLORS.prata,  borderRadius:3, maxBarThickness:44 },
+        { label:'Bronze', data:b, backgroundColor:COLORS.bronze, borderRadius:3, maxBarThickness:44 },
+        { label:'Menção', data:m, backgroundColor:COLORS.mencao, borderRadius:3, maxBarThickness:44 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:550, easing:'easeOutQuart' },
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } },
+        datalabels:{ color:'#fff', font:{size:10,weight:'700'}, formatter:(v)=> v>0 ? v : '', textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 },
+        tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8 }
+      },
+      scales:{
+        x:{ stacked:true, grid:{ display:false }, ticks:{ font:{size:11}, color:'#475569' } },
+        y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:11}, color:'#475569' } }
+      }
+    }
+  });
+}
+
+/* =========================================================
+   TABELA
+========================================================= */
+function renderTable(){
+  const tbody = document.querySelector('#dataTable tbody'); tbody.innerHTML = '';
+  const slice = filteredData.slice(0, 500);
+  const frag = document.createDocumentFragment();
+  slice.forEach(r => {
+    const tr = document.createElement('tr');
+    const badge = (v, cls) => v > 0 ? `<span class="medal-badge ${cls}">${v}</span>` : '';
+    tr.innerHTML = `<td>${escapeHtml(r.ano)}</td><td>${escapeHtml(r.escola)}</td><td>${escapeHtml(r.municipio)}</td><td>${escapeHtml(r.uf)}</td><td>${escapeHtml(r.nivel)}</td><td class="text-center">${badge(r.ouro,'ouro')}</td><td class="text-center">${badge(r.prata,'prata')}</td><td class="text-center">${badge(r.bronze,'bronze')}</td><td class="text-center">${badge(r.mencao,'mencao')}</td><td>${escapeHtml(r.medalha)}</td>`;
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+  document.getElementById('tableInfo').textContent = `${fmtBR(filteredData.length)} registros (exibindo ${Math.min(500, filteredData.length)})`;
+}
+function downloadChart(id, name){
+  const c = document.getElementById(id); if (!c) return;
+  const a = document.createElement('a');
+  a.download = `${name || id}_${new Date().toISOString().slice(0,10)}.png`;
+  a.href = c.toDataURL('image/png', 1.0);
+  a.click();
+}
+
+/* =========================================================
+   A11Y
+========================================================= */
+let fontSize = 16;
+function changeFont(d){ fontSize = Math.max(12, Math.min(22, fontSize + d)); document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); if (currentTab === 'estatisticas') setTimeout(renderEstatisticas, 120); }
+function resetFont(){ fontSize = 16; document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); if (currentTab === 'estatisticas') setTimeout(renderEstatisticas, 120); }
+function toggleContrast(){ document.body.classList.toggle('high-contrast'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('show'); document.getElementById('backdrop').classList.toggle('show'); }
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function showLoading(txt){ document.getElementById('loadingText').textContent = txt || 'Carregando...'; document.getElementById('loadingOverlay').classList.add('show'); }
+function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
+function updateLastUpdate(){ document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR'); }
+function showAlert(msg, type='info'){
+  const div = document.createElement('div');
+  div.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow`;
+  div.style.cssText = 'top:80px; right:20px; z-index:2100; max-width:420px;';
+  div.innerHTML = `<i class="bi bi-info-circle me-2"></i>${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 7000);
+}
+
+/* =========================================================
+   AUTO-REFRESH + POLLING CONTÍNUO
+========================================================= */
+async function forceReload(){
+  const saved = { dd:{}, tipos: ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].map(id => document.getElementById(id).checked) };
+  DROPDOWN_KEYS.forEach(k => saved.dd[k] = getDropdownSelected(k));
+  const ok = await loadData(false);
+  if (ok || rawData.length){
+    try {
+      DROPDOWN_KEYS.forEach(k => setDropdownSelected(k, saved.dd[k] || []));
+      ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach((id,i) => { document.getElementById(id).checked = saved.tipos[i]; });
+    } catch(e){}
+    applyFilters();
+  }
+  scheduleNextRefresh();
+}
+
+function scheduleNextRefresh(){
+  if (refreshTimer) clearTimeout(refreshTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+  const delay = rawData.length ? REFRESH_HAS_DATA_MS : REFRESH_EMPTY_MS;
+
+  // Contador regressivo apenas quando não há dados
+  if (!rawData.length){
+    countdownSec = Math.round(delay / 1000);
+    updateCountdown();
+    countdownTimer = setInterval(() => {
+      countdownSec = Math.max(0, countdownSec - 1);
+      updateCountdown();
+      if (countdownSec <= 0) clearInterval(countdownTimer);
+    }, 1000);
+  }
+
+  refreshTimer = setTimeout(async () => {
+    // Busca silenciosa quando já há dados; quando vazio, busca com loading oculto (não bloqueia UI)
+    await loadData(rawData.length > 0);
+    scheduleNextRefresh();
+  }, delay);
+}
+
+function updateCountdown(){
+  const el = document.getElementById('retryCountdown');
+  if (el) el.textContent = countdownSec;
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+document.addEventListener('DOMContentLoaded', async () => {
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => applyFilters());
+  });
+  bindDropdownEvents();
+
+  // 1) Tenta sessionStorage primeiro (rápido)
+  const restored = loadFromSession();
+
+  // 2) Tenta fetch inicial
+  const ok = await loadData(restored);
+
+  // 3) Agenda próximo ciclo (vai continuar a cada 20s se vazio, ou 5min se encontrado)
+  scheduleNextRefresh();
+});
+</script>
+</body>
+</html>
