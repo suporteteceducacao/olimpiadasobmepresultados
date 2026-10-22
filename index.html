@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard OBMEP · Histórico 2005-2025</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--primary:#1a5fb4;--primary-dark:#0d3d7d;--gold:#f59e0b;--sidebar-w:290px;--base-font:16px;}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{font-size:var(--base-font);background:#eef1f7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1f2937;transition:background .3s,color .3s;}
+body.high-contrast{background:#000;color:#fff;}
+body.high-contrast .card,body.high-contrast .topbar,body.high-contrast .footer,body.high-contrast .sidebar,body.high-contrast .chart-card,body.high-contrast .empty-state-card,body.high-contrast .table-filter-bar{background:#101010 !important;color:#fff !important;border-color:#333 !important;}
+body.high-contrast .table{color:#fff;} body.high-contrast .table thead{background:#1c1c1c !important;color:#fff;}
+body.high-contrast .text-muted{color:#b0b0b0 !important;}
+body.high-contrast .insights-list li,body.high-contrast .destaque-item{background:#1c1c1c;color:#eee;}
+body.high-contrast .table-filter-bar .filter-btn.light{background:#1c1c1c;color:#fff;border-color:#444;}
+
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,var(--primary),var(--primary-dark));color:#fff;padding:1.15rem 1rem;overflow-y:auto;z-index:1050;box-shadow:4px 0 20px rgba(0,0,0,.15);transition:left .3s;}
+.sidebar::-webkit-scrollbar{width:6px;} .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px;}
+.sidebar .nav-link{border-radius:8px;color:#fff;} .sidebar .nav-link:hover{background:rgba(255,255,255,.12);}
+.sidebar .nav-link.active{background:rgba(255,255,255,.22);font-weight:700;}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1040;display:none;} .backdrop.show{display:block;}
+@media(max-width:768px){.sidebar{left:-280px;}.sidebar.show{left:0;}}
+
+.sidebar-filters-header{display:flex;align-items:center;gap:.5rem;padding:.5rem 0;margin-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.18);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.5px;}
+.btn-clear-filters{margin-left:auto;background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:1rem;} .btn-clear-filters:hover{opacity:1;}
+.filter-group{margin-bottom:.7rem;}
+.filter-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;}
+.filter-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.92);}
+.filter-btn{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;padding:.5rem .65rem;border-radius:8px;display:flex;align-items:center;gap:.5rem;text-align:left;cursor:pointer;transition:all .15s;font-family:inherit;}
+.filter-btn:hover{background:rgba(255,255,255,.14);}
+.filter-btn.show,.filter-btn[aria-expanded="true"]{background:rgba(255,255,255,.18);border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.35);}
+.filter-btn.has-selection{border-color:#f59e0b;}
+.filter-btn-icon{font-size:1rem;opacity:.85;flex-shrink:0;}
+.filter-btn-text{flex:1;display:flex;flex-direction:column;min-width:0;}
+.filter-btn-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;opacity:.78;font-weight:700;}
+.filter-btn-value{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.filter-btn.has-selection .filter-btn-value{color:#fbbf24;font-weight:700;}
+.filter-btn-arrow{font-size:.72rem;opacity:.7;transition:transform .2s;}
+.filter-btn[aria-expanded="true"] .filter-btn-arrow{transform:rotate(180deg);}
+.filter-btn.light{background:#f8fafc;border-color:#cbd5e1;color:#0f172a;}
+.filter-btn.light:hover{background:#f1f5f9;border-color:#94a3b8;}
+.filter-btn.light .filter-btn-label{color:#64748b;opacity:1;}
+.filter-btn.light .filter-btn-value{color:#0f172a;}
+.filter-btn.light.has-selection{border-color:#f59e0b;background:#fffbeb;}
+.filter-btn.light.has-selection .filter-btn-value{color:#b45309;}
+.filter-btn.light.show,.filter-btn.light[aria-expanded="true"]{background:#fffbeb;border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.25);}
+
+.dropdown-menu.filter-dropdown{padding:0;min-width:260px;max-width:min(340px,calc(100vw - 2rem));border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden;}
+.filter-search{position:relative;padding:.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
+.filter-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.85rem;pointer-events:none;}
+.filter-search input{width:100%;padding:.4rem .5rem .4rem 2rem;border:1px solid #cbd5e1;border-radius:6px;font-size:.85rem;background:#fff;color:#0f172a;font-family:inherit;}
+.filter-search input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
+.filter-actions{display:flex;align-items:center;gap:.35rem;padding:.4rem .6rem;border-bottom:1px solid #e2e8f0;background:#fff;}
+.filter-actions button{font-size:.74rem;padding:.15rem .4rem;border:none;background:transparent;color:#2563eb;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit;}
+.filter-actions button:hover{background:#eff6ff;}
+.filter-selected-count{font-size:.7rem;color:#64748b;font-weight:600;margin-left:auto;}
+.filter-options{max-height:260px;overflow-y:auto;padding:.3rem;background:#fff;}
+.filter-options::-webkit-scrollbar{width:6px;} .filter-options::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+.filter-option{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:5px;cursor:pointer;font-size:.85rem;color:#1e293b;transition:background .1s;}
+.filter-option:hover{background:#f1f5f9;}
+.filter-option input[type="checkbox"]{margin:0;cursor:pointer;accent-color:#2563eb;flex-shrink:0;}
+.filter-option input[type="checkbox"]:checked ~ span{font-weight:700;color:#1a5fb4;}
+.filter-option.hidden{display:none;}
+.filter-option.empty{display:block;text-align:center;color:#94a3b8;font-style:italic;cursor:default;padding:.75rem;}
+.filter-option.invalid{background:#fef2f2;} .filter-option.invalid span{color:#b91c1c;}
+
+.single-select{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;padding:.5rem .65rem;border-radius:8px;font-size:.85rem;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .65rem center;padding-right:1.75rem;font-family:inherit;}
+.single-select option{background:#1a5fb4;color:#fff;}
+.single-select:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.35);}
+
+.filter-checkboxes{display:grid;grid-template-columns:1fr 1fr;gap:.35rem;}
+.filter-checkbox{display:flex;align-items:center;gap:.4rem;font-size:.8rem;cursor:pointer;color:rgba(255,255,255,.92);padding:.2rem .25rem;border-radius:5px;}
+.filter-checkbox:hover{background:rgba(255,255,255,.08);}
+.filter-checkbox input{margin:0;}
+
+.main-content{margin-left:var(--sidebar-w);padding:1.25rem 1.5rem 1rem;transition:margin .3s;}
+@media(max-width:768px){.main-content{margin-left:0;padding:1rem;}}
+
+.tab-view{display:none;} .tab-view.active{display:block;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.empty-state{display:none;min-height:calc(100vh - 180px);align-items:center;justify-content:center;padding:2rem 1rem;}
+.is-empty .empty-state{display:flex;}
+.is-empty .tab-view{display:none !important;}
+.is-empty .sidebar-filters{display:none;}
+.is-empty .sidebar-nav{opacity:.45;pointer-events:none;}
+.empty-state-card{background:#fff;border-radius:20px;padding:2rem 2.25rem;text-align:center;max-width:760px;border:2px dashed #cbd5e1;box-shadow:0 12px 40px rgba(0,0,0,.06);}
+.empty-icon{font-size:4.5rem;color:#dc3545;line-height:1;margin-bottom:1rem;}
+.empty-state-card h4{font-weight:800;color:#1e293b;margin-bottom:.75rem;}
+.empty-state-card p{color:#475569;margin-bottom:.75rem;}
+
+.file-upload-zone{background:#eff6ff;border:2px dashed #60a5fa;border-radius:14px;padding:1.25rem;margin:.75rem auto;max-width:480px;cursor:pointer;transition:all .2s;}
+.file-upload-zone:hover,.file-upload-zone.dragover{background:#dbeafe;border-color:#2563eb;transform:translateY(-2px);}
+.file-upload-zone .fuz-icon{font-size:2.5rem;color:#2563eb;margin-bottom:.35rem;}
+.file-upload-zone .fuz-title{font-weight:800;color:#1e3a8a;margin-bottom:.2rem;}
+.file-upload-zone .fuz-sub{font-size:.78rem;color:#475569;}
+.file-upload-zone input[type=file]{display:none;}
+
+.diag{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:.75rem;margin-top:1rem;text-align:left;font-size:.8rem;}
+.diag summary{cursor:pointer;font-weight:700;color:#92400e;}
+.diag table{width:100%;border-collapse:collapse;font-size:.72rem;margin-top:.5rem;}
+.diag th{text-align:left;padding:.2rem .4rem;background:#fcd34d;color:#78350f;}
+.diag td{padding:.2rem .4rem;border-top:1px solid #fde68a;font-family:ui-monospace,Menlo,monospace;word-break:break-all;color:#78350f;}
+.diag td.status{font-weight:800;text-align:center;width:60px;}
+.diag td.s404{color:#b91c1c;} .diag td.s200{color:#15803d;} .diag td.serr{color:#b91c1c;}
+.diag a{color:#1e40af;text-decoration:underline;}
+.diag .summary-info{margin-top:.5rem;font-size:.74rem;color:#78350f;}
+
+.topbar{background:#fff;border-radius:16px;padding:.7rem 1rem;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.topbar h5{font-weight:800;color:#0f172a;}
+
+.kpi-card{border-radius:16px;border:none;padding:1.1rem 1.25rem;color:#fff;position:relative;overflow:hidden;height:100%;box-shadow:0 6px 20px rgba(0,0,0,.10);transition:transform .2s,box-shadow .2s;}
+.kpi-card:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(0,0,0,.14);}
+.kpi-card .icon{position:absolute;right:14px;top:14px;font-size:2.5rem;opacity:.22;}
+.kpi-card .value{font-size:2rem;font-weight:800;line-height:1;letter-spacing:-.5px;}
+.kpi-card .label{font-size:.82rem;opacity:.95;margin-top:.4rem;font-weight:600;}
+.bg-total{background:linear-gradient(135deg,#1a5fb4,#4a8ad4);}
+.bg-gold{background:linear-gradient(135deg,#eab308,#fbbf24);color:#2c2c2c;}
+.bg-silver{background:linear-gradient(135deg,#64748b,#b6bcc2);}
+.bg-bronze{background:linear-gradient(135deg,#92400e,#cd7f32);}
+.bg-mencao{background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+.bg-escola{background:linear-gradient(135deg,#059669,#5cdb95);}
+.bg-muni{background:linear-gradient(135deg,#dc3545,#f08080);}
+.bg-edicao{background:linear-gradient(135deg,#0d3d7d,#1a5fb4);}
+
+.chart-card{background:#fff;border-radius:16px;padding:1.1rem 1.25rem;border:none;box-shadow:0 4px 20px rgba(0,0,0,.06);height:100%;}
+.chart-card h6{font-weight:700;color:#0f172a;display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;}
+.chart-subtitle{font-size:.78rem;color:#64748b;margin-bottom:.75rem;}
+.chart-wrap{position:relative;height:340px;} .chart-wrap.tall{height:380px;}
+@media(max-width:768px){.chart-wrap,.chart-wrap.tall{height:280px;}}
+.chart-empty-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.85);border-radius:10px;color:#64748b;font-size:.9rem;font-weight:600;flex-direction:column;gap:.5rem;}
+
+.insights-list{list-style:none;padding:0;margin:0;}
+.insights-list li{padding:.7rem .85rem;margin-bottom:.55rem;border-radius:8px;background:#f8fafc;border-left:4px solid #2563eb;display:flex;align-items:flex-start;gap:.6rem;font-size:.92rem;line-height:1.5;color:#1e293b;}
+.insights-list li i{font-size:1.05rem;margin-top:.15rem;flex-shrink:0;}
+.insights-list li strong{color:#1a5fb4;}
+.destaque-item{display:flex;gap:.75rem;align-items:center;padding:.7rem;border-radius:10px;margin-bottom:.5rem;background:#f8fafc;}
+.destaque-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+.destaque-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:700;}
+.destaque-name{font-size:.95rem;font-weight:800;color:#0f172a;line-height:1.3;word-break:break-word;}
+.destaque-qty{font-size:.78rem;color:#64748b;}
+
+.table-filter-bar{background:#fff;border-radius:14px;padding:1rem 1.15rem;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:1rem;}
+.table-filter-title{display:flex;align-items:center;gap:.4rem;font-size:.88rem;font-weight:700;color:#334155;margin-bottom:.75rem;flex-wrap:wrap;}
+.table-filter-title .btn-clear-filters-table{margin-left:auto;background:none;border:1px solid #e2e8f0;padding:.15rem .55rem;border-radius:6px;color:#64748b;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.25rem;}
+.table-filter-title .btn-clear-filters-table:hover{background:#f8fafc;color:#dc3545;border-color:#fecaca;}
+.table-filter-items{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;}
+.table-filter-items > .dropdown{flex:1 1 200px;min-width:180px;max-width:260px;}
+
+#dataTable{font-size:.85rem;} #dataTable thead.sticky-top{top:0;z-index:2;}
+.medal-badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;padding:2px 8px;border-radius:12px;font-weight:700;font-size:.75rem;}
+.medal-badge.ouro{background:#fef3c7;color:#92400e;}
+.medal-badge.prata{background:#e5e7eb;color:#374151;}
+.medal-badge.bronze{background:#ffedd5;color:#9a3412;}
+.medal-badge.mencao{background:#ede9fe;color:#5b21b6;}
+
+.footer{margin-top:1.5rem;padding:1.25rem;background:#fff;border-radius:16px;text-align:center;color:#64748b;font-size:.88rem;}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.94);display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;z-index:2000;font-weight:600;color:#334155;}
+.loading-overlay.show{display:flex;}
+.btn-icon{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;}
+[vw]{z-index:9999;}
+.scroll-top{position:fixed;bottom:88px;right:20px;z-index:900;width:46px;height:46px;}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f59e0b !important;outline-offset:2px;}
+</style>
+</head>
+<body class="is-empty">
+
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+  <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+  <div id="loadingText">Carregando dados...</div>
+</div>
+<div class="backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar" aria-label="Menu lateral e filtros">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0"><i class="bi bi-trophy-fill me-2 text-warning"></i>OBMEP</h5>
+    <button class="btn btn-sm btn-light d-md-none" onclick="toggleSidebar()" aria-label="Fechar menu"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <nav class="mb-3 sidebar-nav" role="tablist">
+    <a href="#" class="nav-link py-2 active" data-tab="painel" onclick="showTab('painel');return false;"><i class="bi bi-speedometer2 me-2"></i>Painel</a>
+    <a href="#" class="nav-link py-2" data-tab="graficos" onclick="showTab('graficos');return false;"><i class="bi bi-bar-chart-line me-2"></i>Gráficos</a>
+    <a href="#" class="nav-link py-2" data-tab="tabela" onclick="showTab('tabela');return false;"><i class="bi bi-table me-2"></i>Tabela</a>
+  </nav>
+  <div class="sidebar-filters">
+    <div class="sidebar-filters-header"><i class="bi bi-funnel-fill"></i><span>Filtros</span>
+      <button class="btn-clear-filters" onclick="clearFilters()" title="Limpar todos"><i class="bi bi-x-circle-fill"></i></button>
+    </div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="ano">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-calendar-event filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Ano / Edição</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar ano..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="nivel">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-layers filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Nível</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar nível..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="municipio">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-geo-alt filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Município</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar município..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="escola">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-mortarboard filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Escola</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar escola..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="crede">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-diagram-3 filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">CREDE</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar CREDE..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
+    <div class="filter-group">
+      <div class="filter-header"><span class="filter-label">Tipo de Medalha</span></div>
+      <div class="filter-checkboxes">
+        <label class="filter-checkbox"><input type="checkbox" id="tipoOuro" checked> <span>🥇 Ouro</span></label>
+        <label class="filter-checkbox"><input type="checkbox" id="tipoPrata" checked> <span>🥈 Prata</span></label>
+        <label class="filter-checkbox"><input type="checkbox" id="tipoBronze" checked> <span>🥉 Bronze</span></label>
+        <label class="filter-checkbox"><input type="checkbox" id="tipoMencao" checked> <span>⭐ Menção</span></label>
+      </div>
+    </div>
+    <div class="filter-group"><div class="filter-header"><span class="filter-label">RMF</span></div>
+      <select id="filterRMF" class="single-select"><option value="">Todos</option><option value="1">Sim</option><option value="0">Não</option></select>
+    </div>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="topbar" role="banner">
+    <button class="btn btn-outline-primary btn-icon d-md-none" onclick="toggleSidebar()" aria-label="Abrir menu"><i class="bi bi-list fs-4"></i></button>
+    <h5 class="mb-0 me-auto"><i class="bi bi-trophy text-warning me-1"></i>Histórico OBMEP <small class="text-muted d-none d-sm-inline">2005-2025</small></h5>
+    <span class="badge bg-secondary" id="statusBadge"><i class="bi bi-cloud-slash me-1"></i>Aguardando</span>
+    <div class="btn-group" role="group">
+      <button class="btn btn-outline-secondary" onclick="changeFont(-1)">A-</button>
+      <button class="btn btn-outline-secondary" onclick="resetFont()">A</button>
+      <button class="btn btn-outline-secondary" onclick="changeFont(1)">A+</button>
+      <button class="btn btn-outline-secondary" onclick="toggleContrast()"><i class="bi bi-circle-half"></i></button>
+      <button class="btn btn-outline-secondary" onclick="reloadData()"><i class="bi bi-arrow-clockwise"></i></button>
+    </div>
+  </div>
+
+  <section class="empty-state" id="emptyState" aria-live="polite">
+    <div class="empty-state-card">
+      <div class="empty-icon"><i class="bi bi-file-earmark-x-fill"></i></div>
+      <h4>Arquivo XLSX não encontrado</h4>
+      <p>O dashboard procura por <code>Histórico_OBMEP_2005-2025_oficial.xlsx</code> na mesma pasta do <code>index.html</code> — inclusive em subpastas comuns (<code>dados/</code>, <code>assets/</code>, <code>data/</code>).</p>
+
+      <div class="file-upload-zone" id="fileUploadZone" onclick="document.getElementById('fileUpload').click()">
+        <div class="fuz-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+        <div class="fuz-title">Selecione o arquivo manualmente</div>
+        <div class="fuz-sub">Arraste o <code>.xlsx</code> para cá ou clique para escolher</div>
+        <input type="file" id="fileUpload" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+      </div>
+
+      <button class="btn btn-primary mt-2" onclick="reloadData()"><i class="bi bi-arrow-clockwise me-1"></i>Tentar buscar novamente</button>
+
+      <details class="diag" id="diagBox">
+        <summary><i class="bi bi-bug me-1"></i>Diagnóstico técnico</summary>
+        <div class="summary-info">Página: <code id="diagProtocol">—</code></div>
+        <table><thead><tr><th>Status</th><th>URL testada</th></tr></thead><tbody id="diagUrls"></tbody></table>
+      </details>
+    </div>
+  </section>
+
+  <section id="view-painel" class="tab-view active" role="tabpanel">
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-total"><i class="bi bi-trophy-fill icon"></i><div class="value" id="kpiTotal">0</div><div class="label">Total de Medalhas</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-gold"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiOuro">0</div><div class="label">Ouro</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-silver"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiPrata">0</div><div class="label">Prata</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-bronze"><i class="bi bi-award-fill icon"></i><div class="value" id="kpiBronze">0</div><div class="label">Bronze</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-mencao"><i class="bi bi-star-fill icon"></i><div class="value" id="kpiMencao">0</div><div class="label">Menções</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-escola"><i class="bi bi-building icon"></i><div class="value" id="kpiEscolas">0</div><div class="label">Escolas</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-muni"><i class="bi bi-geo-alt-fill icon"></i><div class="value" id="kpiMunicipios">0</div><div class="label">Municípios</div></div></div>
+      <div class="col-6 col-md-4 col-xl-3"><div class="kpi-card bg-edicao"><i class="bi bi-calendar-event icon"></i><div class="value" id="kpiAnos">0</div><div class="label">Edições</div></div></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-7"><div class="chart-card h-100">
+        <h6><i class="bi bi-lightbulb-fill text-warning"></i> Análises Rápidas</h6>
+        <p class="chart-subtitle">Insights com base nos filtros aplicados</p>
+        <ul class="insights-list" id="insightsList"><li class="text-muted"><i class="bi bi-hourglass"></i><span>Carregando…</span></li></ul>
+      </div></div>
+      <div class="col-lg-5"><div class="chart-card h-100">
+        <h6><i class="bi bi-trophy-fill text-warning"></i> Destaques</h6>
+        <p class="chart-subtitle">Melhores no recorte atual</p>
+        <div class="destaque-item"><div class="destaque-icon bg-danger-subtle"><i class="bi bi-geo-alt-fill text-danger"></i></div><div class="flex-grow-1"><div class="destaque-label">Município líder</div><div class="destaque-name" id="destaqueMuni">—</div><div class="destaque-qty" id="destaqueMuniQty">—</div></div></div>
+        <div class="destaque-item"><div class="destaque-icon bg-primary-subtle"><i class="bi bi-building text-primary"></i></div><div class="flex-grow-1"><div class="destaque-label">Escola líder</div><div class="destaque-name" id="destaqueEscola">—</div><div class="destaque-qty" id="destaqueEscolaQty">—</div></div></div>
+        <div class="destaque-item"><div class="destaque-icon bg-success-subtle"><i class="bi bi-calendar-event text-success"></i></div><div class="flex-grow-1"><div class="destaque-label">Edição líder</div><div class="destaque-name" id="destaqueAno">—</div><div class="destaque-qty" id="destaqueAnoQty">—</div></div></div>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="view-graficos" class="tab-view" role="tabpanel">
+    <div class="row g-3">
+      <div class="col-12 col-lg-8"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-bar-chart-fill text-primary"></i> Medalhas por Ano</h6><p class="chart-subtitle">Total por edição</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartAno','medalhas_por_ano')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap tall"><canvas id="chartAno"></canvas></div></div></div>
+      <div class="col-12 col-lg-4"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-pie-chart-fill text-primary"></i> Distribuição</h6><p class="chart-subtitle">Por tipo</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartTipo','distribuicao_tipo')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap tall"><canvas id="chartTipo"></canvas></div></div></div>
+      <div class="col-12 col-lg-6"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-geo text-primary"></i> Top 10 Municípios</h6><p class="chart-subtitle">Ranking</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartMunicipio','top_municipios')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap"><canvas id="chartMunicipio"></canvas></div></div></div>
+      <div class="col-12 col-lg-6"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-building text-primary"></i> Top 10 Escolas</h6><p class="chart-subtitle">Ranking</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEscola','top_escolas')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap"><canvas id="chartEscola"></canvas></div></div></div>
+      <div class="col-12 col-lg-6"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-layers text-primary"></i> Medalhas por Nível</h6><p class="chart-subtitle">Composição</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartNivel','medalhas_por_nivel')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap"><canvas id="chartNivel"></canvas></div></div></div>
+      <div class="col-12 col-lg-6"><div class="chart-card">
+        <div class="d-flex justify-content-between align-items-start"><div><h6><i class="bi bi-graph-up text-primary"></i> Evolução por Tipo</h6><p class="chart-subtitle">Tendência anual</p></div><button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('chartEvolucao','evolucao_por_tipo')"><i class="bi bi-download"></i></button></div>
+        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div></div></div>
+    </div>
+  </section>
+
+  <section id="view-tabela" class="tab-view" role="tabpanel">
+    <div class="table-filter-bar">
+      <div class="table-filter-title"><i class="bi bi-funnel-fill text-primary"></i><span>Filtros da tabela</span>
+        <button class="btn-clear-filters-table" onclick="clearFilters()"><i class="bi bi-x-circle"></i> Limpar todos</button></div>
+      <div class="table-filter-items">
+        <div class="dropdown" data-filter-key="ano">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-calendar-event filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Edição</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+          <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+        </div>
+        <div class="dropdown" data-filter-key="nivel">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-layers filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Nível</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+          <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+        </div>
+        <div class="dropdown" data-filter-key="municipio">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-geo-alt filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Município</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+          <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+        </div>
+        <div class="dropdown" data-filter-key="escola">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-mortarboard filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Escola</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+          <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm" style="border-radius:16px;">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="mb-0"><i class="bi bi-table me-2"></i>Detalhamento dos registros</h6>
+          <span class="text-muted small" id="tableInfo">0 registros</span>
+        </div>
+        <div class="table-responsive" style="max-height:640px;overflow-y:auto;">
+          <table class="table table-sm table-hover align-middle mb-0" id="dataTable">
+            <thead class="table-light sticky-top"><tr>
+              <th>Escola</th><th>Município</th><th>Nível</th><th>Ano</th>
+              <th class="text-center">🥇</th><th class="text-center">🥈</th><th class="text-center">🥉</th><th class="text-center">⭐</th>
+              <th>CREDE</th><th>RMF</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="mb-1"><strong>Dashboard OBMEP</strong> · Histórico 2005-2025</div>
+    <div class="small">Fonte: <em>Histórico_OBMEP_2005-2025_oficial.xlsx</em></div>
+    <div class="small mt-1">Última atualização: <span id="lastUpdate">—</span></div>
+  </footer>
+</main>
+
+<button class="btn btn-primary rounded-circle scroll-top shadow" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo"><i class="bi bi-arrow-up"></i></button>
+
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* =========================================================
+   CONFIG — apenas XLSX
+========================================================= */
+const BASE_NAMES = [
+  'Histórico_OBMEP_2005-2025_oficial',
+  'Historico_OBMEP_2005-2025_oficial',
+  'Histórico_OBMEP_2005_2025_oficial',
+  'Historico_OBMEP_2005_2025_oficial',
+  'historico_obmep_2005-2025_oficial',
+  'HISTORICO_OBMEP_2005-2025_OFICIAL',
+];
+const EXTENSIONS = ['xlsx'];            // APENAS XLSX
+const PATH_PREFIXES = ['', 'dados/', 'data/', 'assets/', 'arquivos/', 'files/', 'uploads/', 'planilhas/', 'planilha/'];
+const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;
+const REFRESH_EMPTY_MS    = 30 * 1000;
+const DROPDOWN_KEYS = ['ano','nivel','municipio','escola','crede'];
+const SESSION_KEY = 'obmep_xlsx_data_v1';
+
+const COLORS = {ouro:'#f59e0b',prata:'#94a3b8',bronze:'#b45309',mencao:'#8b5cf6',primary:'#2563eb',green:'#10b981'};
+if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
+
+let rawData = [];
+let filteredData = [];
+const charts = {};
+let currentTab = 'painel';
+let refreshTimer = null;
+const triedUrls = []; // {url, status}
+
+/* =========================================================
+   UTIL
+========================================================= */
+function num(v){
+  if (v === null || v === undefined) return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).trim().toLowerCase();
+  if (!s) return 0;
+  if (['sim','s','yes','x','true','1'].includes(s)) return 1;
+  if (['não','nao','n','no','false','0'].includes(s)) return 0;
+  const n = parseFloat(s.replace(/\./g,'').replace(',','.'));
+  return isNaN(n) ? 0 : n;
+}
+const str = v => v == null ? '' : String(v).trim();
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtBR = n => Number(n).toLocaleString('pt-BR');
+
+/* =========================================================
+   NORMALIZAÇÃO
+========================================================= */
+function normalizeRow(row){
+  const map = {};
+  for (const key in row){
+    const k = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                 .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    map[k] = row[key];
+  }
+  const get = (...names) => { for (const n of names) if (map[n] !== undefined) return map[n]; return ''; };
+  const out = {
+    escola:str(get('escola')), municipio:str(get('municipio')),
+    nivel:str(get('nivel')), ano:str(get('ano')), medalha:str(get('medalha')),
+    mencao:num(get('mencao','mencao_honrosa')),
+    ouro:num(get('ouro')), prata:num(get('prata')), bronze:num(get('bronze')),
+    crede:str(get('crede')), rmf:str(get('rmf'))
+  };
+  if (out.ouro===0 && out.prata===0 && out.bronze===0 && out.mencao===0 && out.medalha){
+    const m = out.medalha.toLowerCase();
+    if (m.includes('ouro')) out.ouro = 1;
+    else if (m.includes('prata')) out.prata = 1;
+    else if (m.includes('bronze')) out.bronze = 1;
+    else if (m.includes('men')) out.mencao = 1;
+  }
+  return out;
+}
+
+/* =========================================================
+   PARSE XLSX (procura a sheet com dados)
+========================================================= */
+function parseXLSX(buf){
+  const wb = XLSX.read(buf, { type:'array' });
+  let bestRows = null;
+  let bestSheet = '';
+  for (const sheetName of wb.SheetNames){
+    const ws = wb.Sheets[sheetName];
+    if (!ws) continue;
+    const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+    if (rows && rows.length > 0){
+      console.log(`📄 Sheet "${sheetName}" → ${rows.length} linhas`);
+      if (!bestRows || rows.length > bestRows.length){ bestRows = rows; bestSheet = sheetName; }
+    }
+  }
+  if (bestRows) console.log(`✅ Usando sheet: "${bestSheet}"`);
+  return bestRows || [];
+}
+
+/* =========================================================
+   BUILD CANDIDATES — só .xlsx, com paths e case variants
+========================================================= */
+function buildCandidates(){
+  const urls = [];
+  for (const path of PATH_PREFIXES){
+    for (const base of BASE_NAMES){
+      for (const ext of EXTENSIONS){
+        const full = path + base + '.' + ext;
+        urls.push(full);
+        try {
+          const encoded = full.split('/').map(encodeURIComponent).join('/');
+          if (encoded !== full) urls.push(encoded);
+        } catch(e){}
+      }
+    }
+  }
+  return [...new Set(urls)];
+}
+
+/* =========================================================
+   LOAD — fetch automático
+========================================================= */
+async function loadData(){
+  triedUrls.length = 0;
+  updateDiagProtocol();
+
+  if (location.protocol === 'file:'){
+    console.error('❌ Página aberta via file://. Use HTTP (GitHub Pages, localhost, etc.)');
+    if (!rawData.length){ showEmptyState(); updateStatus(false); renderDiag(); }
+    return false;
+  }
+
+  showLoading('Buscando arquivo XLSX...');
+  const candidates = buildCandidates();
+  console.log(`🔎 Testando ${candidates.length} URLs (apenas .xlsx)...`);
+
+  for (const url of candidates){
+    let status = 'ERR';
+    try {
+      const resp = await fetch(url, { cache:'no-store' });
+      status = resp.status;
+      console.log(`  [${status}] ${url}`);
+      if (!resp.ok){ triedUrls.push({url, status}); continue; }
+
+      const ct = (resp.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('text/html')){
+        const peek = await resp.clone().text();
+        if (/<!DOCTYPE|<html/i.test(peek.slice(0,200))){
+          console.warn('  ↳ HTML disfarçado');
+          triedUrls.push({url, status:'HTML'});
+          continue;
+        }
+      }
+      const buf = await resp.arrayBuffer();
+      if (buf.byteLength < 100){
+        console.warn('  ↳ Buffer muito pequeno');
+        triedUrls.push({url, status:'SMALL'});
+        continue;
+      }
+      const rows = parseXLSX(buf);
+      if (!rows || !rows.length){ triedUrls.push({url, status:'EMPTY'}); continue; }
+
+      const norm = rows.map(normalizeRow).filter(r => r.escola || r.municipio || r.ano);
+      if (!norm.length){ triedUrls.push({url, status:'INVALID'}); continue; }
+
+      rawData = norm;
+      console.log(`✅ ${norm.length} registros de: ${url}`);
+      triedUrls.push({url, status:'200'});
+      saveToSession();
+      hideEmptyState();
+      buildAllDropdowns();
+      applyFilters();
+      updateLastUpdate();
+      updateStatus(true);
+      hideLoading();
+      return true;
+    } catch(e){
+      triedUrls.push({url, status:'ERR'});
+      console.warn(`  ✗ ${url} → ${e.message}`);
+    }
+  }
+
+  // Todos falharam
+  console.error('❌ Nenhuma URL respondeu com XLSX válido.');
+  if (!rawData.length){
+    // tenta sessionStorage
+    if (loadFromSession()){ hideLoading(); return false; }
+    showEmptyState();
+    updateStatus(false);
+    renderDiag();
+  } else {
+    console.warn('Mantendo dados em memória (fetch falhou).');
+  }
+  hideLoading();
+  return false;
+}
+
+/* =========================================================
+   UPLOAD MANUAL (plano B)
+========================================================= */
+async function loadFromFile(file){
+  if (!file) return;
+  showLoading('Lendo arquivo XLSX...');
+  try {
+    const buf = await file.arrayBuffer();
+    const rows = parseXLSX(buf);
+    if (!rows || !rows.length){ showAlert('O arquivo está vazio ou não contém dados.','danger'); hideLoading(); return; }
+    const norm = rows.map(normalizeRow).filter(r => r.escola || r.municipio || r.ano);
+    if (!norm.length){ showAlert('Nenhuma linha válida encontrada no arquivo.','danger'); hideLoading(); return; }
+
+    rawData = norm;
+    saveToSession();
+    hideEmptyState();
+    buildAllDropdowns();
+    applyFilters();
+    updateLastUpdate();
+    updateStatus(true);
+    hideLoading();
+    showAlert(`✅ ${norm.length} registros carregados de "${escapeHtml(file.name)}".`, 'success');
+  } catch(e){
+    console.error(e);
+    showAlert('Erro ao ler XLSX: ' + e.message, 'danger');
+    hideLoading();
+  }
+}
+
+function bindFileUpload(){
+  const input = document.getElementById('fileUpload');
+  const zone = document.getElementById('fileUploadZone');
+  if (!input || !zone) return;
+
+  input.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) loadFromFile(f);
+  });
+
+  ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => {
+    e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => {
+    e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadFromFile(f);
+  });
+}
+
+/* =========================================================
+   PERSISTÊNCIA EM SESSÃO
+========================================================= */
+function saveToSession(){
+  try {
+    const payload = JSON.stringify(rawData);
+    if (payload.length < 4_500_000){ // ~4.5MB de margem
+      sessionStorage.setItem(SESSION_KEY, payload);
+    } else {
+      console.warn('Dados grandes demais para sessionStorage — não persistido.');
+    }
+  } catch(e){ console.warn('Falha ao salvar em sessionStorage:', e.message); }
+}
+function loadFromSession(){
+  try {
+    const txt = sessionStorage.getItem(SESSION_KEY);
+    if (!txt) return false;
+    const data = JSON.parse(txt);
+    if (!Array.isArray(data) || !data.length) return false;
+    rawData = data;
+    console.log(`📦 ${rawData.length} registros carregados da sessão anterior`);
+    hideEmptyState();
+    buildAllDropdowns();
+    applyFilters();
+    updateLastUpdate();
+    updateStatus(true);
+    return true;
+  } catch(e){ return false; }
+}
+
+/* =========================================================
+   DIAGNÓSTICO
+========================================================= */
+function updateDiagProtocol(){
+  const el = document.getElementById('diagProtocol');
+  if (el) el.textContent = location.href;
+}
+function renderDiag(){
+  const tbody = document.getElementById('diagUrls');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  for (const t of triedUrls){
+    const tr = document.createElement('tr');
+    let cls = 's404';
+    if (t.status === 200) cls = 's200';
+    else if (t.status === 'ERR' || t.status === 'HTML' || t.status === 'INVALID' || t.status === 'EMPTY' || t.status === 'SMALL') cls = 'serr';
+    tr.innerHTML = `<td class="status ${cls}">${escapeHtml(String(t.status))}</td>
+      <td><a href="${escapeHtml(t.url)}" target="_blank" rel="noopener">${escapeHtml(t.url)}</a></td>`;
+    tbody.appendChild(tr);
+  }
+  const box = document.getElementById('diagBox');
+  if (box) box.open = true;
+}
+
+/* =========================================================
+   EMPTY / STATUS
+========================================================= */
+function showEmptyState(){ document.body.classList.add('is-empty'); }
+function hideEmptyState(){ document.body.classList.remove('is-empty'); }
+function updateStatus(hasData){
+  const el = document.getElementById('statusBadge');
+  if (!el) return;
+  if (hasData){ el.className = 'badge bg-success'; el.innerHTML = '<i class="bi bi-cloud-check me-1"></i>Conectado'; }
+  else { el.className = 'badge bg-danger'; el.innerHTML = '<i class="bi bi-cloud-slash me-1"></i>Sem dados'; }
+}
+
+/* =========================================================
+   DROPDOWNS / FILTROS
+========================================================= */
+function uniqSort(arr){
+  return [...new Set(arr.filter(v => v !== ''))].sort((a,b) => {
+    const na = parseFloat(a), nb = parseFloat(b);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return a.localeCompare(b, 'pt-BR');
+  });
+}
+function getDropdownSelected(key){
+  const vals = new Set();
+  document.querySelectorAll(`.dropdown[data-filter-key="${key}"]`).forEach(dd => {
+    dd.querySelectorAll('.filter-options input[type="checkbox"]:checked').forEach(i => vals.add(i.value));
+  });
+  return [...vals];
+}
+function setDropdownSelected(key, values){
+  const set = new Set(values || []);
+  document.querySelectorAll(`.dropdown[data-filter-key="${key}"]`).forEach(dd => {
+    dd.querySelectorAll('.filter-options input[type="checkbox"]').forEach(i => { i.checked = set.has(i.value); });
+  });
+  updateDropdownLabel(key);
+}
+function updateDropdownLabel(key){
+  document.querySelectorAll(`.dropdown[data-filter-key="${key}"]`).forEach(dd => {
+    const checkboxes = dd.querySelectorAll('.filter-options input[type="checkbox"]');
+    const total = checkboxes.length;
+    const selected = dd.querySelectorAll('.filter-options input[type="checkbox"]:checked').length;
+    const valEl = dd.querySelector('.filter-btn-value');
+    const cntEl = dd.querySelector('.filter-selected-count');
+    if (total === 0){ valEl.textContent = '—'; dd.classList.remove('has-selection'); if (cntEl) cntEl.textContent = '0 de 0'; return; }
+    if (selected === 0 || selected === total){ valEl.textContent = `Todos (${total})`; dd.classList.remove('has-selection'); }
+    else { valEl.textContent = `${selected} de ${total}`; dd.classList.add('has-selection'); }
+    if (cntEl) cntEl.textContent = `${selected} de ${total}`;
+  });
+}
+function applyFiltersExcept(exceptKey, baseData){
+  const dropdownFilters = {};
+  for (const k of DROPDOWN_KEYS){ if (k === exceptKey) continue; dropdownFilters[k] = getDropdownSelected(k); }
+  const rmf = document.getElementById('filterRMF').value;
+  const tipos = { ouro:document.getElementById('tipoOuro').checked, prata:document.getElementById('tipoPrata').checked, bronze:document.getElementById('tipoBronze').checked, mencao:document.getElementById('tipoMencao').checked };
+  return baseData.filter(r => {
+    for (const k in dropdownFilters){ const sel = dropdownFilters[k]; if (sel.length && !sel.includes(r[k])) return false; }
+    if (rmf === '1' && !/^(1|sim|s|true)$/i.test(r.rmf)) return false;
+    if (rmf === '0' && !/^(0|nao|não|n|false)$/i.test(r.rmf)) return false;
+    if (!tipos.ouro && r.ouro > 0) return false;
+    if (!tipos.prata && r.prata > 0) return false;
+    if (!tipos.bronze && r.bronze > 0) return false;
+    if (!tipos.mencao && r.mencao > 0) return false;
+    return true;
+  });
+}
+function rebuildDropdownOptions(key){
+  const base = applyFiltersExcept(key, rawData);
+  const available = uniqSort(base.map(r => r[key]));
+  const currentlySelected = new Set(getDropdownSelected(key));
+  const allValues = [...available];
+  for (const v of currentlySelected){ if (!allValues.includes(v)) allValues.push(v); }
+  allValues.sort((a,b) => { const na = parseFloat(a), nb = parseFloat(b); if (!isNaN(na) && !isNaN(nb)) return na - nb; return a.localeCompare(b,'pt-BR'); });
+
+  document.querySelectorAll(`.dropdown[data-filter-key="${key}"]`).forEach(dd => {
+    const optionsEl = dd.querySelector('.filter-options');
+    optionsEl.innerHTML = '';
+    if (!allValues.length){ optionsEl.innerHTML = '<div class="filter-option empty">Sem valores</div>'; updateDropdownLabel(key); return; }
+    const frag = document.createDocumentFragment();
+    for (const v of allValues){
+      const isAvailable = available.includes(v);
+      const label = document.createElement('label');
+      label.className = 'filter-option' + (isAvailable ? '' : ' invalid');
+      const safe = escapeHtml(v);
+      const checked = currentlySelected.has(v) ? 'checked' : '';
+      const hint = isAvailable ? '' : ' <small>(sem dados)</small>';
+      label.innerHTML = `<input type="checkbox" value="${safe}" ${checked}> <span>${safe}${hint}</span>`;
+      frag.appendChild(label);
+    }
+    optionsEl.appendChild(frag);
+    updateDropdownLabel(key);
+  });
+}
+function buildAllDropdowns(){ for (const key of DROPDOWN_KEYS) rebuildDropdownOptions(key); }
+
+function bindDropdownEvents(){
+  document.querySelectorAll('.dropdown[data-filter-key]').forEach(dd => {
+    const key = dd.dataset.filterKey;
+    const optionsEl = dd.querySelector('.filter-options');
+    const search = dd.querySelector('.filter-search-input');
+    if (search){
+      search.addEventListener('input', () => {
+        const q = search.value.toLowerCase().trim();
+        optionsEl.querySelectorAll('.filter-option').forEach(opt => {
+          if (opt.classList.contains('empty')) return;
+          opt.classList.toggle('hidden', q !== '' && !opt.textContent.toLowerCase().includes(q));
+        });
+      });
+      search.addEventListener('click', e => e.stopPropagation());
+    }
+    optionsEl.addEventListener('change', e => {
+      if (e.target.matches('input[type="checkbox"]')){
+        const val = e.target.value, checked = e.target.checked;
+        document.querySelectorAll(`.dropdown[data-filter-key="${key}"] input[type="checkbox"]`).forEach(cb => { if (cb.value === val) cb.checked = checked; });
+        updateDropdownLabel(key);
+        applyFilters();
+      }
+    });
+    dd.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        if (action === 'all'){ optionsEl.querySelectorAll('.filter-option:not(.hidden):not(.empty) input[type="checkbox"]').forEach(i => { i.checked = true; }); }
+        else if (action === 'none'){ optionsEl.querySelectorAll('input[type="checkbox"]').forEach(i => { i.checked = false; }); }
+        optionsEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          document.querySelectorAll(`.dropdown[data-filter-key="${key}"] input[type="checkbox"]`).forEach(other => { if (other.value === cb.value) other.checked = cb.checked; });
+        });
+        updateDropdownLabel(key);
+        applyFilters();
+      });
+    });
+    if (search && window.matchMedia('(min-width:768px)').matches){
+      dd.addEventListener('shown.bs.dropdown', () => setTimeout(() => { try { search.focus({preventScroll:true}); } catch(e){} }, 30));
+    }
+    dd.addEventListener('hidden.bs.dropdown', () => {
+      if (search) search.value = '';
+      optionsEl.querySelectorAll('.filter-option').forEach(o => o.classList.remove('hidden'));
+    });
+  });
+}
+
+function applyFilters(){
+  if (!rawData.length){ filteredData = []; return; }
+  const anos = getDropdownSelected('ano'), niveis = getDropdownSelected('nivel'),
+        munis = getDropdownSelected('municipio'), escolas = getDropdownSelected('escola'),
+        credes = getDropdownSelected('crede');
+  const rmf = document.getElementById('filterRMF').value;
+  const tipos = { ouro:document.getElementById('tipoOuro').checked, prata:document.getElementById('tipoPrata').checked, bronze:document.getElementById('tipoBronze').checked, mencao:document.getElementById('tipoMencao').checked };
+  filteredData = rawData.filter(r => {
+    if (anos.length && !anos.includes(r.ano)) return false;
+    if (niveis.length && !niveis.includes(r.nivel)) return false;
+    if (munis.length && !munis.includes(r.municipio)) return false;
+    if (escolas.length && !escolas.includes(r.escola)) return false;
+    if (credes.length && !credes.includes(r.crede)) return false;
+    if (rmf === '1' && !/^(1|sim|s|true)$/i.test(r.rmf)) return false;
+    if (rmf === '0' && !/^(0|nao|não|n|false)$/i.test(r.rmf)) return false;
+    if (!tipos.ouro && r.ouro > 0) return false;
+    if (!tipos.prata && r.prata > 0) return false;
+    if (!tipos.bronze && r.bronze > 0) return false;
+    if (!tipos.mencao && r.mencao > 0) return false;
+    return true;
+  });
+  buildAllDropdowns();
+  renderAll();
+}
+function clearFilters(){
+  DROPDOWN_KEYS.forEach(key => setDropdownSelected(key, []));
+  document.getElementById('filterRMF').value = '';
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => document.getElementById(id).checked = true);
+  applyFilters();
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+  const view = document.getElementById('view-' + tab);
+  if (view) view.classList.add('active');
+  document.querySelectorAll('.sidebar .nav-link[data-tab]').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  if (tab === 'graficos') setTimeout(renderAllCharts, 60);
+  else if (tab === 'tabela') renderTable();
+  if (window.innerWidth < 768){
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('backdrop').classList.remove('show');
+  }
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function setText(id, v){ const e = document.getElementById(id); if (e) e.textContent = v; }
+function groupSum(keyFn, valFn){
+  const m = {};
+  filteredData.forEach(r => { const k = keyFn(r); if (!k) return; m[k] = (m[k]||0) + valFn(r); });
+  return m;
+}
+function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function renderAll(){
+  renderKPIs(); renderInsights(); renderDestaques();
+  if (currentTab === 'graficos') renderAllCharts();
+  if (currentTab === 'tabela') renderTable();
+}
+function renderKPIs(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  const anosS = new Set(), muniS = new Set(), escS = new Set();
+  filteredData.forEach(r => {
+    t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao;
+    if (r.ano) anosS.add(r.ano); if (r.municipio) muniS.add(r.municipio); if (r.escola) escS.add(r.escola);
+  });
+  setText('kpiTotal', fmtBR(t.ouro + t.prata + t.bronze));
+  setText('kpiOuro', fmtBR(t.ouro));
+  setText('kpiPrata', fmtBR(t.prata));
+  setText('kpiBronze', fmtBR(t.bronze));
+  setText('kpiMencao', fmtBR(t.mencao));
+  setText('kpiEscolas', fmtBR(escS.size));
+  setText('kpiMunicipios', fmtBR(muniS.size));
+  setText('kpiAnos', fmtBR(anosS.size));
+}
+function renderInsights(){
+  const list = document.getElementById('insightsList'); if (!list) return;
+  const total = filteredData.reduce((s,r)=>s+r.ouro+r.prata+r.bronze,0);
+  const ouros = filteredData.reduce((s,r)=>s+r.ouro,0);
+  if (total === 0){ list.innerHTML = '<li class="text-muted"><i class="bi bi-info-circle"></i><span>Sem dados para os filtros atuais.</span></li>'; return; }
+  const items = [];
+  items.push(`<li><i class="bi bi-trophy-fill text-warning"></i><span><strong>${(ouros/total*100).toFixed(1)}%</strong> das medalhas foram de ouro (${fmtBR(ouros)} de ${fmtBR(total)})</span></li>`);
+  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze);
+  const topMuni = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
+  if (topMuni) items.push(`<li><i class="bi bi-geo-alt-fill text-danger"></i><span><strong>${escapeHtml(topMuni[0])}</strong> lidera com <strong>${fmtBR(topMuni[1])}</strong> medalhas (${(topMuni[1]/total*100).toFixed(1)}%)</span></li>`);
+  const anoM = groupSum(r=>r.ano, r=>r.ouro+r.prata+r.bronze);
+  const anos = Object.keys(anoM).sort((a,b)=>parseFloat(a)-parseFloat(b));
+  if (anos.length >= 2){
+    const diff = anoM[anos[anos.length-1]] - anoM[anos[0]];
+    items.push(`<li><i class="bi bi-graph-up-arrow text-${diff>=0?'success':'danger'}"></i><span>Entre <strong>${anos[0]}</strong> e <strong>${anos[anos.length-1]}</strong> o total ${diff>=0?'cresceu':'recuou'} ${diff>=0?'↑':'↓'} <strong>${fmtBR(Math.abs(diff))}</strong></span></li>`);
+  }
+  const topAno = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
+  if (topAno) items.push(`<li><i class="bi bi-calendar-event text-primary"></i><span>Edição de <strong>${topAno[0]}</strong> foi recorde: <strong>${fmtBR(topAno[1])}</strong> medalhas</span></li>`);
+  list.innerHTML = items.join('');
+}
+function renderDestaques(){
+  const muniM = groupSum(r=>r.municipio, r=>r.ouro+r.prata+r.bronze);
+  const escM  = groupSum(r=>r.escola,    r=>r.ouro+r.prata+r.bronze);
+  const anoM  = groupSum(r=>r.ano,       r=>r.ouro+r.prata+r.bronze);
+  const tM = Object.entries(muniM).sort((a,b)=>b[1]-a[1])[0];
+  const tE = Object.entries(escM).sort((a,b)=>b[1]-a[1])[0];
+  const tA = Object.entries(anoM).sort((a,b)=>b[1]-a[1])[0];
+  setText('destaqueMuni', tM ? tM[0] : '—'); setText('destaqueMuniQty', tM ? `${fmtBR(tM[1])} medalhas` : '—');
+  setText('destaqueEscola', tE ? tE[0] : '—'); setText('destaqueEscolaQty', tE ? `${fmtBR(tE[1])} medalhas` : '—');
+  setText('destaqueAno', tA ? tA[0] : '—'); setText('destaqueAnoQty', tA ? `${fmtBR(tA[1])} medalhas` : '—');
+}
+
+/* =========================================================
+   CHARTS
+========================================================= */
+const baseOpts = (horizontal=false) => ({
+  responsive:true, maintainAspectRatio:false, indexAxis: horizontal ? 'y' : 'x',
+  animation:{ duration:550, easing:'easeOutQuart' },
+  plugins:{
+    legend:{ display:false },
+    datalabels:{ color:'#0f172a', backgroundColor:'rgba(255,255,255,.82)', borderRadius:4, padding:{top:2,bottom:2,left:5,right:5}, font:{size:11,weight:'700'}, anchor:'end', align:'end', offset:4, formatter:v => v > 0 ? Number(v).toLocaleString('pt-BR') : '' },
+    tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8 }
+  },
+  scales:{ x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569', maxRotation: horizontal?0:45 } }, y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569' }, beginAtZero:true } }
+});
+function showChartEmpty(id, msg='Sem dados para os filtros atuais'){
+  const c = document.getElementById(id); if (!c) return;
+  const p = c.parentElement; if (p.querySelector('.chart-empty-overlay')) return;
+  const d = document.createElement('div'); d.className = 'chart-empty-overlay';
+  d.innerHTML = `<i class="bi bi-bar-chart"></i><span>${msg}</span>`; p.appendChild(d);
+}
+function clearChartEmpty(id){
+  const c = document.getElementById(id); if (!c) return;
+  const ov = c.parentElement.querySelector('.chart-empty-overlay'); if (ov) ov.remove();
+}
+function renderChartAno(){
+  const m = groupSum(r => r.ano, r => r.ouro + r.prata + r.bronze);
+  const labels = Object.keys(m).sort((a,b) => parseFloat(a) - parseFloat(b));
+  const data = labels.map(l => m[l]);
+  destroyChart('chartAno'); clearChartEmpty('chartAno');
+  if (!data.some(v => v > 0)){ showChartEmpty('chartAno'); return; }
+  charts.chartAno = new Chart(document.getElementById('chartAno'), { type:'bar', data:{ labels, datasets:[{ label:'Medalhas', data, backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:44 }] }, options: baseOpts() });
+}
+function renderChartTipo(){
+  const t = { ouro:0, prata:0, bronze:0, mencao:0 };
+  filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
+  const total = t.ouro + t.prata + t.bronze + t.mencao;
+  destroyChart('chartTipo'); clearChartEmpty('chartTipo');
+  if (total === 0){ showChartEmpty('chartTipo'); return; }
+  charts.chartTipo = new Chart(document.getElementById('chartTipo'), {
+    type:'doughnut', data:{ labels:['Ouro','Prata','Bronze','Menção'], datasets:[{ data:[t.ouro,t.prata,t.bronze,t.mencao], backgroundColor:[COLORS.ouro,COLORS.prata,COLORS.bronze,COLORS.mencao], borderWidth:3, borderColor:'#fff', hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ color:'#fff', font:{size:12,weight:'800'}, formatter:(v,ctx) => { const s = ctx.dataset.data.reduce((a,b)=>a+b,0); return (!s || v === 0) ? '' : v + '\n' + (v/s*100).toFixed(0) + '%'; }, textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 } } }
+  });
+}
+function renderChartMunicipio(){
+  const m = groupSum(r => r.municipio, r => r.ouro + r.prata + r.bronze);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartMunicipio'); clearChartEmpty('chartMunicipio');
+  if (!top.length || top[0][1] === 0){ showChartEmpty('chartMunicipio'); return; }
+  charts.chartMunicipio = new Chart(document.getElementById('chartMunicipio'), { type:'bar', data:{ labels: top.map(x=>x[0]), datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.green, borderRadius:6, maxBarThickness:26 }] }, options: baseOpts(true) });
+}
+function renderChartEscola(){
+  const m = groupSum(r => r.escola, r => r.ouro + r.prata + r.bronze);
+  const top = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartEscola'); clearChartEmpty('chartEscola');
+  if (!top.length || top[0][1] === 0){ showChartEmpty('chartEscola'); return; }
+  charts.chartEscola = new Chart(document.getElementById('chartEscola'), { type:'bar', data:{ labels: top.map(x => x[0].length > 26 ? x[0].slice(0,26)+'…' : x[0]), datasets:[{ label:'Medalhas', data: top.map(x=>x[1]), backgroundColor:COLORS.primary, borderRadius:6, maxBarThickness:26 }] }, options: baseOpts(true) });
+}
+function renderChartNivel(){
+  const o = groupSum(r=>r.nivel, r=>r.ouro), p = groupSum(r=>r.nivel, r=>r.prata), b = groupSum(r=>r.nivel, r=>r.bronze);
+  const niveis = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b)])].sort();
+  const total = niveis.reduce((s,n)=>s+(o[n]||0)+(p[n]||0)+(b[n]||0),0);
+  destroyChart('chartNivel'); clearChartEmpty('chartNivel');
+  if (total === 0){ showChartEmpty('chartNivel'); return; }
+  charts.chartNivel = new Chart(document.getElementById('chartNivel'), {
+    type:'bar', data:{ labels: niveis.map(n => 'Nível ' + n), datasets:[
+      { label:'Ouro', data: niveis.map(n=>o[n]||0), backgroundColor:COLORS.ouro, borderRadius:4, maxBarThickness:60 },
+      { label:'Prata', data: niveis.map(n=>p[n]||0), backgroundColor:COLORS.prata, borderRadius:4, maxBarThickness:60 },
+      { label:'Bronze', data: niveis.map(n=>b[n]||0), backgroundColor:COLORS.bronze, borderRadius:4, maxBarThickness:60 }
+    ]},
+    options:{ ...baseOpts(), plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ color:'#fff', font:{size:11,weight:'700'}, formatter:v => v > 0 ? v : '', textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 } },
+      scales:{ x:{ stacked:true, grid:{ display:false }, ticks:{ font:{size:12}, color:'#475569' } }, y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:12}, color:'#475569' } } } }
+  });
+}
+function renderChartEvolucao(){
+  const o = groupSum(r=>r.ano, r=>r.ouro), p = groupSum(r=>r.ano, r=>r.prata), b = groupSum(r=>r.ano, r=>r.bronze), m = groupSum(r=>r.ano, r=>r.mencao);
+  const anos = [...new Set([...Object.keys(o),...Object.keys(p),...Object.keys(b),...Object.keys(m)])].sort((a,b)=>parseFloat(a)-parseFloat(b));
+  destroyChart('chartEvolucao'); clearChartEmpty('chartEvolucao');
+  if (!anos.length){ showChartEmpty('chartEvolucao'); return; }
+  charts.chartEvolucao = new Chart(document.getElementById('chartEvolucao'), {
+    type:'line', data:{ labels: anos, datasets:[
+      { label:'Ouro', data: anos.map(a=>o[a]||0), borderColor:COLORS.ouro, backgroundColor:'rgba(245,158,11,.15)', tension:.35, fill:true, pointRadius:3, borderWidth:2 },
+      { label:'Prata', data: anos.map(a=>p[a]||0), borderColor:COLORS.prata, backgroundColor:'rgba(148,163,184,.12)', tension:.35, pointRadius:3, borderWidth:2 },
+      { label:'Bronze', data: anos.map(a=>b[a]||0), borderColor:COLORS.bronze, backgroundColor:'rgba(180,83,9,.12)', tension:.35, pointRadius:3, borderWidth:2 },
+      { label:'Menção', data: anos.map(a=>m[a]||0), borderColor:COLORS.mencao, backgroundColor:'rgba(139,92,246,.12)', tension:.35, pointRadius:3, borderWidth:2 }
+    ]},
+    options:{ ...baseOpts(), plugins:{ legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } }, datalabels:{ display:false } } }
+  });
+}
+function renderAllCharts(){ renderChartAno(); renderChartTipo(); renderChartMunicipio(); renderChartEscola(); renderChartNivel(); renderChartEvolucao(); }
+
+function renderTable(){
+  const tbody = document.querySelector('#dataTable tbody'); tbody.innerHTML = '';
+  const slice = filteredData.slice(0, 500);
+  const frag = document.createDocumentFragment();
+  slice.forEach(r => {
+    const tr = document.createElement('tr');
+    const badge = (v, cls) => v > 0 ? `<span class="medal-badge ${cls}">${v}</span>` : '';
+    tr.innerHTML = `<td>${escapeHtml(r.escola)}</td><td>${escapeHtml(r.municipio)}</td><td>${escapeHtml(r.nivel)}</td><td>${escapeHtml(r.ano)}</td><td class="text-center">${badge(r.ouro,'ouro')}</td><td class="text-center">${badge(r.prata,'prata')}</td><td class="text-center">${badge(r.bronze,'bronze')}</td><td class="text-center">${badge(r.mencao,'mencao')}</td><td>${escapeHtml(r.crede)}</td><td>${escapeHtml(r.rmf)}</td>`;
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+  document.getElementById('tableInfo').textContent = `${fmtBR(filteredData.length)} registros (exibindo ${Math.min(500, filteredData.length)})`;
+}
+
+function downloadChart(id, name){
+  const c = document.getElementById(id); if (!c) return;
+  const a = document.createElement('a');
+  a.download = `${name || id}_${new Date().toISOString().slice(0,10)}.png`;
+  a.href = c.toDataURL('image/png', 1.0);
+  a.click();
+}
+
+/* =========================================================
+   A11Y
+========================================================= */
+let fontSize = 16;
+function changeFont(d){ fontSize = Math.max(12, Math.min(22, fontSize + d)); document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); }
+function resetFont(){ fontSize = 16; document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); }
+function toggleContrast(){ document.body.classList.toggle('high-contrast'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('show'); document.getElementById('backdrop').classList.toggle('show'); }
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function showLoading(txt){ document.getElementById('loadingText').textContent = txt || 'Carregando...'; document.getElementById('loadingOverlay').classList.add('show'); }
+function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
+function updateLastUpdate(){ document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR'); }
+function showAlert(msg, type='info'){
+  const div = document.createElement('div');
+  div.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow`;
+  div.style.cssText = 'top:80px; right:20px; z-index:2100; max-width:420px;';
+  div.innerHTML = `<i class="bi bi-info-circle me-2"></i>${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 9000);
+}
+
+/* =========================================================
+   AUTO-REFRESH
+========================================================= */
+async function reloadData(){
+  const saved = { dd:{}, rmf: document.getElementById('filterRMF').value, tipos: ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].map(id => document.getElementById(id).checked) };
+  DROPDOWN_KEYS.forEach(k => saved.dd[k] = getDropdownSelected(k));
+  const ok = await loadData();
+  if (ok || rawData.length){
+    try {
+      DROPDOWN_KEYS.forEach(k => setDropdownSelected(k, saved.dd[k] || []));
+      document.getElementById('filterRMF').value = saved.rmf;
+      ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach((id,i) => { document.getElementById(id).checked = saved.tipos[i]; });
+    } catch(e){}
+    applyFilters();
+  }
+}
+function scheduleNextRefresh(){
+  if (refreshTimer) clearTimeout(refreshTimer);
+  const delay = rawData.length ? REFRESH_HAS_DATA_MS : REFRESH_EMPTY_MS;
+  refreshTimer = setTimeout(async () => { await reloadData(); scheduleNextRefresh(); }, delay);
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+document.addEventListener('DOMContentLoaded', async () => {
+  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao','filterRMF'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => applyFilters());
+  });
+  bindDropdownEvents();
+  bindFileUpload();
+
+  // 1) tenta sessionStorage primeiro (rápido, sem rede)
+  const restored = loadFromSession();
+
+  // 2) tenta fetch em background
+  const ok = await loadData();
+
+  // 3) agenda refresh
+  if (ok || restored) scheduleNextRefresh();
+  else scheduleNextRefresh(); // mesmo vazio, tenta a cada 30s
+});
+</script>
+</body>
+</html>
