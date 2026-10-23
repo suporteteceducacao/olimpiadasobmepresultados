@@ -95,7 +95,6 @@ body.high-contrast .stat-table .total-row{background:#1c1c1c;border-color:#444;}
 .empty-state-card h4{font-weight:800;color:#1e293b;margin-bottom:.75rem;}
 .empty-state-card p{color:#475569;margin-bottom:.75rem;}
 
-/* === AUTO-RETRY STATUS === */
 .retry-box{background:#eff6ff;border:2px dashed #60a5fa;border-radius:14px;padding:1.25rem;margin:1rem auto;max-width:480px;text-align:center;}
 .retry-box .retry-icon{font-size:2.2rem;color:#2563eb;margin-bottom:.5rem;animation:pulse 1.6s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
@@ -222,6 +221,10 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
       <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-layers filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Nível</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
       <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar nível..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
     </div></div>
+    <div class="filter-group"><div class="dropdown" data-filter-key="tipo">
+      <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-diagram-3 filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Tipo de Escola</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+      <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar tipo..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+    </div></div>
     <div class="filter-group"><div class="dropdown" data-filter-key="municipio">
       <button type="button" class="filter-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-geo-alt filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Município</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
       <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar município..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
@@ -265,22 +268,13 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
       <div class="empty-icon"><i class="bi bi-search"></i></div>
       <h4>Procurando o arquivo XLSX…</h4>
       <p>O dashboard procura por <code>Histórico_OBMEP_2005-2025_oficial.xlsx</code> na mesma pasta do <code>index.html</code> — inclusive em subpastas comuns (<code>dados/</code>, <code>assets/</code>, <code>data/</code>, <code>uploads/</code>).</p>
-
       <div class="retry-box">
         <div class="retry-icon"><i class="bi bi-arrow-repeat"></i></div>
         <div class="retry-title">Busca automática ativa</div>
         <div class="retry-sub">O sistema verifica o arquivo continuamente até encontrá-lo.</div>
-        <div class="retry-countdown">
-          <i class="bi bi-hourglass-split"></i>
-          Próxima tentativa em <span class="num" id="retryCountdown">20</span>s
-        </div>
+        <div class="retry-countdown"><i class="bi bi-hourglass-split"></i> Próxima tentativa em <span class="num" id="retryCountdown">20</span>s</div>
       </div>
-
-      <p class="small text-muted mt-3 mb-0">
-        <i class="bi bi-info-circle me-1"></i>
-        Basta colocar o arquivo na pasta correta — a página detecta sozinha.
-      </p>
-
+      <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle me-1"></i>Basta colocar o arquivo na pasta correta — a página detecta sozinha.</p>
       <details class="diag" id="diagBox">
         <summary><i class="bi bi-bug me-1"></i>Diagnóstico técnico</summary>
         <div class="summary-info">Página: <code id="diagProtocol">—</code></div>
@@ -355,109 +349,55 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-12 col-lg-7">
-        <div class="chart-card">
-          <h6><i class="bi bi-calendar-event text-primary"></i> Quadro Síntese · Medalhas por Edição</h6>
-          <p class="chart-subtitle">Detalhamento por ano com totais por tipo</p>
-          <div class="stat-table-wrap">
-            <table class="stat-table">
-              <thead><tr>
-                <th>Ano</th>
-                <th class="text-center">🥇 Ouro</th>
-                <th class="text-center">🥈 Prata</th>
-                <th class="text-center">🥉 Bronze</th>
-                <th class="text-center">⭐ Menção</th>
-                <th class="text-center">Total</th>
-              </tr></thead>
-              <tbody id="statTbodyAno"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-lg-5">
-        <div class="chart-card">
-          <h6><i class="bi bi-layers text-primary"></i> Quadro Síntese · Medalhas por Nível</h6>
-          <p class="chart-subtitle">Composição por nível de participação</p>
-          <div class="stat-table-wrap">
-            <table class="stat-table">
-              <thead><tr>
-                <th>Nível</th>
-                <th class="text-center">🥇</th>
-                <th class="text-center">🥈</th>
-                <th class="text-center">🥉</th>
-                <th class="text-center">⭐</th>
-                <th class="text-center">Total</th>
-              </tr></thead>
-              <tbody id="statTbodyNivel"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <div class="col-12 col-lg-7"><div class="chart-card">
+        <h6><i class="bi bi-calendar-event text-primary"></i> Quadro Síntese · Medalhas por Edição</h6>
+        <p class="chart-subtitle">Detalhamento por ano com totais por tipo</p>
+        <div class="stat-table-wrap"><table class="stat-table">
+          <thead><tr><th>Ano</th><th class="text-center">🥇 Ouro</th><th class="text-center">🥈 Prata</th><th class="text-center">🥉 Bronze</th><th class="text-center">⭐ Menção</th><th class="text-center">Total</th></tr></thead>
+          <tbody id="statTbodyAno"></tbody>
+        </table></div>
+      </div></div>
+      <div class="col-12 col-lg-5"><div class="chart-card">
+        <h6><i class="bi bi-layers text-primary"></i> Quadro Síntese · Medalhas por Nível</h6>
+        <p class="chart-subtitle">Composição por nível de participação</p>
+        <div class="stat-table-wrap"><table class="stat-table">
+          <thead><tr><th>Nível</th><th class="text-center">🥇</th><th class="text-center">🥈</th><th class="text-center">🥉</th><th class="text-center">⭐</th><th class="text-center">Total</th></tr></thead>
+          <tbody id="statTbodyNivel"></tbody>
+        </table></div>
+      </div></div>
     </div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-12">
-        <div class="chart-card">
-          <h6><i class="bi bi-geo-alt-fill text-danger"></i> Quadro de Municípios</h6>
-          <p class="chart-subtitle">Ranking completo por total de premiações</p>
-          <div class="stat-table-wrap">
-            <table class="stat-table">
-              <thead><tr>
-                <th class="text-center" style="width:60px;">#</th>
-                <th>Município</th>
-                <th class="text-center">🥇 Ouro</th>
-                <th class="text-center">🥈 Prata</th>
-                <th class="text-center">🥉 Bronze</th>
-                <th class="text-center">⭐ Menção</th>
-                <th class="text-center">Total</th>
-              </tr></thead>
-              <tbody id="statTbodyMunicipio"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="row g-3 mb-3"><div class="col-12"><div class="chart-card">
+      <h6><i class="bi bi-geo-alt-fill text-danger"></i> Quadro de Municípios</h6>
+      <p class="chart-subtitle">Ranking completo por total de premiações</p>
+      <div class="stat-table-wrap"><table class="stat-table">
+        <thead><tr><th class="text-center" style="width:60px;">#</th><th>Município</th><th class="text-center">🥇 Ouro</th><th class="text-center">🥈 Prata</th><th class="text-center">🥉 Bronze</th><th class="text-center">⭐ Menção</th><th class="text-center">Total</th></tr></thead>
+        <tbody id="statTbodyMunicipio"></tbody>
+      </table></div>
+    </div></div></div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-12">
-        <div class="chart-card">
-          <h6><i class="bi bi-building text-primary"></i> Top 20 Escolas</h6>
-          <p class="chart-subtitle">Ranking por total de premiações</p>
-          <div class="stat-table-wrap">
-            <table class="stat-table">
-              <thead><tr>
-                <th class="text-center" style="width:60px;">#</th>
-                <th>Escola</th>
-                <th class="text-center">🥇 Ouro</th>
-                <th class="text-center">🥈 Prata</th>
-                <th class="text-center">🥉 Bronze</th>
-                <th class="text-center">⭐ Menção</th>
-                <th class="text-center">Total</th>
-              </tr></thead>
-              <tbody id="statTbodyEscola"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="row g-3 mb-3"><div class="col-12"><div class="chart-card">
+      <h6><i class="bi bi-building text-primary"></i> Top 20 Escolas</h6>
+      <p class="chart-subtitle">Ranking por total de premiações</p>
+      <div class="stat-table-wrap"><table class="stat-table">
+        <thead><tr><th class="text-center" style="width:60px;">#</th><th>Escola</th><th class="text-center">🥇 Ouro</th><th class="text-center">🥈 Prata</th><th class="text-center">🥉 Bronze</th><th class="text-center">⭐ Menção</th><th class="text-center">Total</th></tr></thead>
+        <tbody id="statTbodyEscola"></tbody>
+      </table></div>
+    </div></div></div>
 
     <div class="row g-3">
-      <div class="col-12 col-lg-5">
-        <div class="chart-card h-100">
-          <h6><i class="bi bi-lightning-charge-fill text-warning"></i> Destaques Estatísticos</h6>
-          <p class="chart-subtitle">Recordes e curiosidades do recorte</p>
-          <ul class="insights-list" id="statDestaques"><li class="text-muted"><i class="bi bi-hourglass"></i><span>Carregando…</span></li></ul>
+      <div class="col-12 col-lg-5"><div class="chart-card h-100">
+        <h6><i class="bi bi-lightning-charge-fill text-warning"></i> Destaques Estatísticos</h6>
+        <p class="chart-subtitle">Recordes e curiosidades do recorte</p>
+        <ul class="insights-list" id="statDestaques"><li class="text-muted"><i class="bi bi-hourglass"></i><span>Carregando…</span></li></ul>
+      </div></div>
+      <div class="col-12 col-lg-7"><div class="chart-card h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div><h6><i class="bi bi-bar-chart-fill text-primary"></i> Composição por Edição</h6><p class="chart-subtitle">Barras verticais empilhadas — Ouro · Prata · Bronze · Menção</p></div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('statChartAnoTipo','composicao_por_edicao')"><i class="bi bi-download"></i></button>
         </div>
-      </div>
-      <div class="col-12 col-lg-7">
-        <div class="chart-card h-100">
-          <div class="d-flex justify-content-between align-items-start">
-            <div><h6><i class="bi bi-bar-chart-fill text-primary"></i> Composição por Edição</h6><p class="chart-subtitle">Barras verticais empilhadas — Ouro · Prata · Bronze · Menção</p></div>
-            <button class="btn btn-sm btn-outline-secondary" onclick="downloadChart('statChartAnoTipo','composicao_por_edicao')"><i class="bi bi-download"></i></button>
-          </div>
-          <div class="chart-wrap"><canvas id="statChartAnoTipo"></canvas></div>
-        </div>
-      </div>
+        <div class="chart-wrap"><canvas id="statChartAnoTipo"></canvas></div>
+      </div></div>
     </div>
   </section>
 
@@ -472,6 +412,10 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
         </div>
         <div class="dropdown" data-filter-key="nivel">
           <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-layers filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Nível</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
+          <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
+        </div>
+        <div class="dropdown" data-filter-key="tipo">
+          <button type="button" class="filter-btn light" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-strategy="fixed" aria-expanded="false"><i class="bi bi-diagram-3 filter-btn-icon"></i><span class="filter-btn-text"><span class="filter-btn-label">Tipo</span><span class="filter-btn-value">Carregando…</span></span><i class="bi bi-chevron-down filter-btn-arrow"></i></button>
           <div class="dropdown-menu filter-dropdown"><div class="filter-search"><i class="bi bi-search"></i><input type="search" class="filter-search-input" placeholder="Buscar..."></div><div class="filter-actions"><button type="button" data-action="all">Marcar todos</button><button type="button" data-action="none">Limpar</button><span class="filter-selected-count">0 de 0</span></div><div class="filter-options"></div></div>
         </div>
         <div class="dropdown" data-filter-key="municipio">
@@ -497,9 +441,9 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
         <div class="table-responsive" style="max-height:640px;overflow-y:auto;">
           <table class="table table-sm table-hover align-middle mb-0" id="dataTable">
             <thead class="table-light sticky-top"><tr>
-              <th>Ano</th><th>Escola</th><th>Município</th><th>UF</th><th>Nível</th>
+              <th>Ano</th><th>Nível</th><th>Escola</th><th>Tipo</th><th>Município</th><th>UF</th>
               <th class="text-center">🥇</th><th class="text-center">🥈</th><th class="text-center">🥉</th><th class="text-center">⭐</th>
-              <th>Medalha</th>
+              <th>Premiação</th>
             </tr></thead>
             <tbody></tbody>
           </table>
@@ -536,10 +480,10 @@ const BASE_NAMES = [
 ];
 const EXTENSIONS = ['xlsx'];
 const PATH_PREFIXES = ['', 'dados/', 'data/', 'assets/', 'arquivos/', 'files/', 'uploads/', 'planilhas/', 'planilha/'];
-const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;   // quando já há dados, re-checa a cada 5 min
-const REFRESH_EMPTY_MS    = 20 * 1000;       // quando NÃO há dados, re-checa a cada 20s (até achar)
-const DROPDOWN_KEYS = ['ano','nivel','municipio','escola','uf'];
-const SESSION_KEY = 'obmep_xlsx_data_v3';
+const REFRESH_HAS_DATA_MS = 5 * 60 * 1000;
+const REFRESH_EMPTY_MS    = 20 * 1000;
+const DROPDOWN_KEYS = ['ano','nivel','tipo','municipio','escola','uf'];
+const SESSION_KEY = 'obmep_xlsx_data_v4';
 
 const COLORS = {ouro:'#f59e0b',prata:'#94a3b8',bronze:'#b45309',mencao:'#8b5cf6',primary:'#2563eb',green:'#10b981'};
 if (window.ChartDataLabels) Chart.register(window.ChartDataLabels);
@@ -558,7 +502,8 @@ const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<'
 const fmtBR = n => Number(n).toLocaleString('pt-BR');
 
 /* =========================================================
-   NORMALIZAÇÃO
+   NORMALIZAÇÃO — novas colunas da planilha:
+   Ano | Nível | Escola | Tipo | Município | UF | Medalha | Menção
 ========================================================= */
 function normalizeRow(row){
   const map = {};
@@ -568,40 +513,71 @@ function normalizeRow(row){
     map[k] = row[key];
   }
   const get = (...names) => { for (const n of names) if (map[n] !== undefined && map[n] !== '') return map[n]; return ''; };
+
+  // Nível: vem como "Nível 1", "Nivel 2" ou apenas "3"
+  let nivelRaw = str(get('nivel','nível'));
+  nivelRaw = nivelRaw.replace(/^n[íi]vel\s*/i, '').trim();
+
+  const medalhaRaw = str(get('medalha','premiacao','premiação','tipo_medalha'));
+  const mencaoRaw  = str(get('mencao','menção','mencao_honrosa','menção_honrosa'));
+
   const out = {
     escola:    str(get('escola')),
-    municipio: str(get('municipio')),
+    tipo:      str(get('tipo','tipo_escola','rede')),
+    municipio: str(get('municipio','município')),
     uf:        str(get('uf','estado')),
-    nivel:     str(get('nivel')),
+    nivel:     nivelRaw,
     ano:       str(get('ano','edicao','ano_edicao')),
-    medalha:   str(get('medalha','premiacao','tipo')),
+    medalha:   medalhaRaw,
     ouro:0, prata:0, bronze:0, mencao:0
   };
-  const m = out.medalha.toLowerCase();
+
+  // Deriva flags a partir da coluna "Medalha"
+  const m = medalhaRaw.toLowerCase();
   if (m.includes('ouro')) out.ouro = 1;
   else if (m.includes('prata')) out.prata = 1;
   else if (m.includes('bronze')) out.bronze = 1;
   else if (m.includes('men')) out.mencao = 1;
+
+  // Deriva menção a partir da coluna separada "Menção" (1/0, sim/não, x, etc.)
+  const men = mencaoRaw.toLowerCase().trim();
+  if (['1','sim','s','yes','x','true','menção','mencao','menção honrosa','mencao honrosa'].includes(men)){
+    out.mencao = 1;
+  }
+
+  // Medalha tem prioridade (são mutuamente exclusivas na OBMEP)
+  if (out.ouro || out.prata || out.bronze) out.mencao = 0;
+
+  // Rótulo legível
+  if (out.ouro) out.medalhaLabel = 'Ouro';
+  else if (out.prata) out.medalhaLabel = 'Prata';
+  else if (out.bronze) out.medalhaLabel = 'Bronze';
+  else if (out.mencao) out.medalhaLabel = 'Menção Honrosa';
+  else out.medalhaLabel = '—';
+
   return out;
 }
 
 /* =========================================================
-   PARSE / CANDIDATOS / LOAD
+   PARSE XLSX — lê TODAS as abas e concatena
 ========================================================= */
 function parseXLSX(buf){
   const wb = XLSX.read(buf, { type:'array' });
-  let bestRows = null, bestSheet = '';
+  let all = [];
+  const detalhe = [];
   for (const sheetName of wb.SheetNames){
     const ws = wb.Sheets[sheetName];
     if (!ws) continue;
     const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
     if (rows && rows.length > 0){
-      if (!bestRows || rows.length > bestRows.length){ bestRows = rows; bestSheet = sheetName; }
+      detalhe.push(`${sheetName}: ${rows.length}`);
+      all = all.concat(rows);
     }
   }
-  if (bestRows) console.log(`✅ Sheet usada: "${bestSheet}" (${bestRows.length} linhas)`);
-  return bestRows || [];
+  console.log(`✅ ${wb.SheetNames.length} aba(s) → ${all.length} linhas totais | ${detalhe.join(' | ')}`);
+  return all;
 }
+
 function buildCandidates(){
   const urls = [];
   for (const path of PATH_PREFIXES)
@@ -832,6 +808,7 @@ function bindDropdownEvents(){
 function applyFilters(){
   if (!rawData.length){ filteredData = []; return; }
   const anos = getDropdownSelected('ano'), niveis = getDropdownSelected('nivel'),
+        tipos_esc = getDropdownSelected('tipo'),
         munis = getDropdownSelected('municipio'), escolas = getDropdownSelected('escola'),
         ufs = getDropdownSelected('uf');
   const tipos = {
@@ -843,6 +820,7 @@ function applyFilters(){
   filteredData = rawData.filter(r => {
     if (anos.length && !anos.includes(r.ano)) return false;
     if (niveis.length && !niveis.includes(r.nivel)) return false;
+    if (tipos_esc.length && !tipos_esc.includes(r.tipo)) return false;
     if (munis.length && !munis.includes(r.municipio)) return false;
     if (escolas.length && !escolas.includes(r.escola)) return false;
     if (ufs.length && !ufs.includes(r.uf)) return false;
@@ -1087,7 +1065,6 @@ function medalCell(v, cls){
 }
 
 function renderEstatisticas(){
-  // KPI totals
   const t = { ouro:0, prata:0, bronze:0, mencao:0 };
   filteredData.forEach(r => { t.ouro += r.ouro; t.prata += r.prata; t.bronze += r.bronze; t.mencao += r.mencao; });
   const total = t.ouro + t.prata + t.bronze + t.mencao;
@@ -1097,7 +1074,7 @@ function renderEstatisticas(){
   setText('statBronze', fmtBR(t.bronze)); setText('statBronzePct', total ? (t.bronze/total*100).toFixed(1)+'%' : '0%');
   setText('statMencao', fmtBR(t.mencao)); setText('statMencaoPct', total ? (t.mencao/total*100).toFixed(1)+'%' : '0%');
 
-  // Tabela por Ano
+  // Por Ano
   const byAno = {};
   filteredData.forEach(r => {
     const a = r.ano || '—';
@@ -1129,7 +1106,7 @@ function renderEstatisticas(){
     <td class="text-center">${fmtBR(sO+sP+sB+sM)}</td>`;
   tbodyAno.appendChild(trTot);
 
-  // Tabela por Nível
+  // Por Nível
   const byNivel = {};
   filteredData.forEach(r => {
     const n = r.nivel || '—';
@@ -1161,7 +1138,7 @@ function renderEstatisticas(){
     <td class="text-center">${fmtBR(nO+nP+nB+nM)}</td>`;
   tbodyNivel.appendChild(trNivelTot);
 
-  // Quadro de Municípios
+  // Municípios
   const byMuni = {};
   filteredData.forEach(r => {
     const m = r.municipio || '—';
@@ -1180,217 +1157,4 @@ function renderEstatisticas(){
         <td class="text-center">${medalCell(d.ouro,'gold')}</td>
         <td class="text-center">${medalCell(d.prata,'silver')}</td>
         <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
-        <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
-        <td class="text-center"><strong>${fmtBR(d.total)}</strong></td>`;
-      tbodyMuni.appendChild(tr);
-    });
-  }
-
-  // Top 20 Escolas
-  const byEscola = {};
-  filteredData.forEach(r => {
-    const e = r.escola || '—';
-    byEscola[e] = byEscola[e] || { ouro:0, prata:0, bronze:0, mencao:0 };
-    byEscola[e].ouro += r.ouro; byEscola[e].prata += r.prata; byEscola[e].bronze += r.bronze; byEscola[e].mencao += r.mencao;
-  });
-  const escolaSorted = Object.entries(byEscola).map(([k,v])=>({escola:k, ...v, total:v.ouro+v.prata+v.bronze+v.mencao})).sort((a,b)=>b.total-a.total).slice(0,20);
-  const tbodyEscola = document.getElementById('statTbodyEscola'); tbodyEscola.innerHTML = '';
-  if (!escolaSorted.length){
-    tbodyEscola.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Sem dados</td></tr>';
-  } else {
-    escolaSorted.forEach((d, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="text-center"><strong>${i+1}º</strong></td>
-        <td>${escapeHtml(d.escola)}</td>
-        <td class="text-center">${medalCell(d.ouro,'gold')}</td>
-        <td class="text-center">${medalCell(d.prata,'silver')}</td>
-        <td class="text-center">${medalCell(d.bronze,'bronze')}</td>
-        <td class="text-center">${medalCell(d.mencao,'mencao')}</td>
-        <td class="text-center"><strong>${fmtBR(d.total)}</strong></td>`;
-      tbodyEscola.appendChild(tr);
-    });
-  }
-
-  // Destaques Estatísticos
-  const destEl = document.getElementById('statDestaques');
-  if (!total){
-    destEl.innerHTML = '<li class="text-muted"><i class="bi bi-info-circle"></i><span>Sem dados para os filtros atuais.</span></li>';
-  } else {
-    const items = [];
-    const media = total / Math.max(1, anosSorted.length);
-    items.push(`<li><i class="bi bi-calculator text-primary"></i><span>Média de <strong>${media.toFixed(1)}</strong> premiações por edição (${anosSorted.length} edições)</span></li>`);
-
-    const ouroMuni = Object.entries(byMuni).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
-    if (ouroMuni && ouroMuni[1].ouro > 0) items.push(`<li><i class="bi bi-trophy-fill text-warning"></i><span><strong>${escapeHtml(ouroMuni[0])}</strong> lidera em ouros: <strong>${fmtBR(ouroMuni[1].ouro)}</strong> 🥇</span></li>`);
-
-    const ouroEscola = Object.entries(byEscola).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
-    if (ouroEscola && ouroEscola[1].ouro > 0) items.push(`<li><i class="bi bi-building text-success"></i><span>Escola com mais ouros: <strong>${escapeHtml(ouroEscola[0])}</strong> (${fmtBR(ouroEscola[1].ouro)} 🥇)</span></li>`);
-
-    const mencaoAno = Object.entries(byAno).sort((a,b)=>b[1].mencao-a[1].mencao)[0];
-    if (mencaoAno && mencaoAno[1].mencao > 0) items.push(`<li><i class="bi bi-star-fill text-primary"></i><span>Ano com mais menções: <strong>${mencaoAno[0]}</strong> (${fmtBR(mencaoAno[1].mencao)} ⭐)</span></li>`);
-
-    const ouroAno = Object.entries(byAno).sort((a,b)=>b[1].ouro-a[1].ouro)[0];
-    if (ouroAno && ouroAno[1].ouro > 0) items.push(`<li><i class="bi bi-award-fill text-warning"></i><span>Ano recordista em ouros: <strong>${ouroAno[0]}</strong> (${fmtBR(ouroAno[1].ouro)} 🥇)</span></li>`);
-
-    const nivelTop = Object.entries(byNivel).map(([k,v])=>({nivel:k, tot:v.ouro+v.prata+v.bronze+v.mencao})).sort((a,b)=>b.tot-a.tot)[0];
-    if (nivelTop && nivelTop.tot > 0) items.push(`<li><i class="bi bi-layers text-primary"></i><span>Nível com mais premiações: <strong>Nível ${escapeHtml(nivelTop.nivel)}</strong> (${fmtBR(nivelTop.tot)} no total)</span></li>`);
-
-    const pctMedalhas = ((t.ouro + t.prata + t.bronze) / total * 100).toFixed(1);
-    items.push(`<li><i class="bi bi-pie-chart-fill text-primary"></i><span><strong>${pctMedalhas}%</strong> do total são medalhas (ouro/prata/bronze); <strong>${(100 - parseFloat(pctMedalhas)).toFixed(1)}%</strong> são menções honrosas</span></li>`);
-
-    destEl.innerHTML = items.join('');
-  }
-
-  // Chart composição por edição (empilhado vertical)
-  renderStatChartAnoTipo(byAno, anosSorted);
-}
-
-function renderStatChartAnoTipo(byAno, anosSorted){
-  destroyChart('statChartAnoTipo'); clearChartEmpty('statChartAnoTipo');
-  if (!anosSorted || !anosSorted.length){ showChartEmpty('statChartAnoTipo'); return; }
-  const o = anosSorted.map(a => byAno[a].ouro);
-  const p = anosSorted.map(a => byAno[a].prata);
-  const b = anosSorted.map(a => byAno[a].bronze);
-  const m = anosSorted.map(a => byAno[a].mencao);
-  if (![...o,...p,...b,...m].some(v=>v>0)){ showChartEmpty('statChartAnoTipo'); return; }
-  charts.statChartAnoTipo = new Chart(document.getElementById('statChartAnoTipo'), {
-    type:'bar',
-    data:{
-      labels: anosSorted,
-      datasets:[
-        { label:'Ouro',   data:o, backgroundColor:COLORS.ouro,   borderRadius:3, maxBarThickness:44 },
-        { label:'Prata',  data:p, backgroundColor:COLORS.prata,  borderRadius:3, maxBarThickness:44 },
-        { label:'Bronze', data:b, backgroundColor:COLORS.bronze, borderRadius:3, maxBarThickness:44 },
-        { label:'Menção', data:m, backgroundColor:COLORS.mencao, borderRadius:3, maxBarThickness:44 }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:550, easing:'easeOutQuart' },
-      plugins:{
-        legend:{ position:'bottom', labels:{ boxWidth:14, padding:14, font:{size:12,weight:'600'} } },
-        datalabels:{ color:'#fff', font:{size:10,weight:'700'}, formatter:(v)=> v>0 ? v : '', textStrokeColor:'rgba(0,0,0,.35)', textStrokeWidth:2 },
-        tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, cornerRadius:8 }
-      },
-      scales:{
-        x:{ stacked:true, grid:{ display:false }, ticks:{ font:{size:11}, color:'#475569' } },
-        y:{ stacked:true, beginAtZero:true, grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:11}, color:'#475569' } }
-      }
-    }
-  });
-}
-
-/* =========================================================
-   TABELA
-========================================================= */
-function renderTable(){
-  const tbody = document.querySelector('#dataTable tbody'); tbody.innerHTML = '';
-  const slice = filteredData.slice(0, 500);
-  const frag = document.createDocumentFragment();
-  slice.forEach(r => {
-    const tr = document.createElement('tr');
-    const badge = (v, cls) => v > 0 ? `<span class="medal-badge ${cls}">${v}</span>` : '';
-    tr.innerHTML = `<td>${escapeHtml(r.ano)}</td><td>${escapeHtml(r.escola)}</td><td>${escapeHtml(r.municipio)}</td><td>${escapeHtml(r.uf)}</td><td>${escapeHtml(r.nivel)}</td><td class="text-center">${badge(r.ouro,'ouro')}</td><td class="text-center">${badge(r.prata,'prata')}</td><td class="text-center">${badge(r.bronze,'bronze')}</td><td class="text-center">${badge(r.mencao,'mencao')}</td><td>${escapeHtml(r.medalha)}</td>`;
-    frag.appendChild(tr);
-  });
-  tbody.appendChild(frag);
-  document.getElementById('tableInfo').textContent = `${fmtBR(filteredData.length)} registros (exibindo ${Math.min(500, filteredData.length)})`;
-}
-function downloadChart(id, name){
-  const c = document.getElementById(id); if (!c) return;
-  const a = document.createElement('a');
-  a.download = `${name || id}_${new Date().toISOString().slice(0,10)}.png`;
-  a.href = c.toDataURL('image/png', 1.0);
-  a.click();
-}
-
-/* =========================================================
-   A11Y
-========================================================= */
-let fontSize = 16;
-function changeFont(d){ fontSize = Math.max(12, Math.min(22, fontSize + d)); document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); if (currentTab === 'estatisticas') setTimeout(renderEstatisticas, 120); }
-function resetFont(){ fontSize = 16; document.documentElement.style.setProperty('--base-font', fontSize + 'px'); if (currentTab === 'graficos') setTimeout(renderAllCharts, 120); if (currentTab === 'estatisticas') setTimeout(renderEstatisticas, 120); }
-function toggleContrast(){ document.body.classList.toggle('high-contrast'); }
-function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('show'); document.getElementById('backdrop').classList.toggle('show'); }
-
-/* =========================================================
-   HELPERS
-========================================================= */
-function showLoading(txt){ document.getElementById('loadingText').textContent = txt || 'Carregando...'; document.getElementById('loadingOverlay').classList.add('show'); }
-function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
-function updateLastUpdate(){ document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR'); }
-function showAlert(msg, type='info'){
-  const div = document.createElement('div');
-  div.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow`;
-  div.style.cssText = 'top:80px; right:20px; z-index:2100; max-width:420px;';
-  div.innerHTML = `<i class="bi bi-info-circle me-2"></i>${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-  document.body.appendChild(div);
-  setTimeout(() => div.remove(), 7000);
-}
-
-/* =========================================================
-   AUTO-REFRESH + POLLING CONTÍNUO
-========================================================= */
-async function forceReload(){
-  const saved = { dd:{}, tipos: ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].map(id => document.getElementById(id).checked) };
-  DROPDOWN_KEYS.forEach(k => saved.dd[k] = getDropdownSelected(k));
-  const ok = await loadData(false);
-  if (ok || rawData.length){
-    try {
-      DROPDOWN_KEYS.forEach(k => setDropdownSelected(k, saved.dd[k] || []));
-      ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach((id,i) => { document.getElementById(id).checked = saved.tipos[i]; });
-    } catch(e){}
-    applyFilters();
-  }
-  scheduleNextRefresh();
-}
-
-function scheduleNextRefresh(){
-  if (refreshTimer) clearTimeout(refreshTimer);
-  if (countdownTimer) clearInterval(countdownTimer);
-  const delay = rawData.length ? REFRESH_HAS_DATA_MS : REFRESH_EMPTY_MS;
-
-  // Contador regressivo apenas quando não há dados
-  if (!rawData.length){
-    countdownSec = Math.round(delay / 1000);
-    updateCountdown();
-    countdownTimer = setInterval(() => {
-      countdownSec = Math.max(0, countdownSec - 1);
-      updateCountdown();
-      if (countdownSec <= 0) clearInterval(countdownTimer);
-    }, 1000);
-  }
-
-  refreshTimer = setTimeout(async () => {
-    // Busca silenciosa quando já há dados; quando vazio, busca com loading oculto (não bloqueia UI)
-    await loadData(rawData.length > 0);
-    scheduleNextRefresh();
-  }, delay);
-}
-
-function updateCountdown(){
-  const el = document.getElementById('retryCountdown');
-  if (el) el.textContent = countdownSec;
-}
-
-/* =========================================================
-   INIT
-========================================================= */
-document.addEventListener('DOMContentLoaded', async () => {
-  ['tipoOuro','tipoPrata','tipoBronze','tipoMencao'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => applyFilters());
-  });
-  bindDropdownEvents();
-
-  // 1) Tenta sessionStorage primeiro (rápido)
-  const restored = loadFromSession();
-
-  // 2) Tenta fetch inicial
-  const ok = await loadData(restored);
-
-  // 3) Agenda próximo ciclo (vai continuar a cada 20s se vazio, ou 5min se encontrado)
-  scheduleNextRefresh();
-});
-</script>
-</body>
-</html>
+        <td class="text-center">${medalCell(d.mencao
